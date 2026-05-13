@@ -1,0 +1,8 @@
+{
+  "name": "CitizenConnect",
+  "description": "An AI-powered civic grievance platform for seamless citizen-government collaboration.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": []
+}

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CitizenConnect – Smart City. Better Tomorrow.</title>
+    <meta name="description" content="CitizenConnect: AI-powered civic grievance platform. Report issues, track progress, and connect with local authorities." />
+    <!-- Blocking theme script: runs before CSS/React to prevent flash of wrong theme -->
+    <script>
+      (function() {
+        try {
+          var stored = localStorage.getItem('citizenconnect_theme');
+          // Default to dark if no preference stored
+          if (stored !== 'light') {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch(e) {
+          // If localStorage is unavailable, keep dark as default
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
