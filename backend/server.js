@@ -6,6 +6,7 @@ const complaintRoutes = require('./routes/complaintRoutes');
 const authRoutes = require('./routes/authRoutes');
 const schemeRoutes = require('./routes/schemeRoutes');
 const donationRoutes = require('./routes/donationRoutes');
+const initiativeRoutes = require('./routes/initiativeRoutes');
 
 
 // Load environment variables
@@ -43,6 +44,7 @@ app.use('/api/complaints', complaintRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/schemes', schemeRoutes);
 app.use('/api/donations', donationRoutes);
+app.use('/api/initiatives', initiativeRoutes);
 
 
 // Test Route
@@ -82,6 +84,7 @@ app.get('/api/debug-gemini', async (req, res) => {
         });
     }
 });
+
 // Global Error Handler
 app.use((err, req, res, next) => {
     console.error('Error Stack:', err.stack);
