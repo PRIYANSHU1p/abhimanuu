@@ -38,6 +38,10 @@ const initiativeSchema = new mongoose.Schema({
         default: 0
     },
     images: [String],
+    groupLink: {
+        type: String,
+        default: ''
+    },
     startDate: Date,
     endDate: Date
 }, {

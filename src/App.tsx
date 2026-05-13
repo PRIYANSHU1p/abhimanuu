@@ -63,7 +63,8 @@ import {
   Navigation,
   Crosshair,
   Download,
-  Key
+  Key,
+  MessageCircle
 } from 'lucide-react';
 import { CivicGallery } from './components/CivicGallery';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap, Tooltip } from 'react-leaflet';
@@ -258,6 +259,7 @@ interface Initiative {
   volunteersJoined: number;
   images: string[];
   status: string;
+  groupLink?: string;
 }
 
 // --- Mock Data ---
@@ -4421,25 +4423,38 @@ const InitiativesPage = ({ language, initiatives, onRefresh }: { language: Langu
                                         </div>
                                     </div>
 
-                                    <button 
-                                        onClick={() => handleJoin(item._id)}
-                                        disabled={joining === item._id || progress >= 100}
-                                        className={`w-full py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${
-                                            joining === item._id 
-                                            ? 'bg-gray-100 dark:bg-white/5 text-gray-400 cursor-not-allowed' 
-                                            : progress >= 100
-                                            ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 cursor-not-allowed'
-                                            : 'bg-primary text-white hover:bg-blue-700 shadow-xl shadow-primary/20 active:scale-[0.98]'
-                                        }`}
-                                    >
-                                        {joining === item._id ? (
-                                            <div className="h-4 w-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
-                                        ) : progress >= 100 ? (
-                                            <><Check size={14} /> {t('Initiative Full', 'पहल पूर्ण')}</>
-                                        ) : (
-                                            <><Users size={14} /> {t('Join Initiative', 'पहल में शामिल हों')}</>
+                                    <div className="flex flex-col gap-3">
+                                        {item.groupLink && (
+                                            <a 
+                                                href={item.groupLink} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="w-full py-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-3 hover:bg-emerald-500/20 shadow-lg shadow-emerald-500/5 active:scale-[0.98]"
+                                            >
+                                                <MessageCircle size={14} /> {t('Join Community Group', 'सामुदायिक समूह में शामिल हों')}
+                                            </a>
                                         )}
-                                    </button>
+                                        
+                                        <button 
+                                            onClick={() => handleJoin(item._id)}
+                                            disabled={joining === item._id || progress >= 100}
+                                            className={`w-full py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${
+                                                joining === item._id 
+                                                ? 'bg-gray-100 dark:bg-white/5 text-gray-400 cursor-not-allowed' 
+                                                : progress >= 100
+                                                ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 cursor-not-allowed'
+                                                : 'bg-primary text-white hover:bg-blue-700 shadow-xl shadow-primary/20 active:scale-[0.98]'
+                                            }`}
+                                        >
+                                            {joining === item._id ? (
+                                                <div className="h-4 w-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+                                            ) : progress >= 100 ? (
+                                                <><Check size={14} /> {t('Initiative Full', 'पहल पूर्ण')}</>
+                                            ) : (
+                                                <><Users size={14} /> {t('Join Initiative', 'पहल में शामिल हों')}</>
+                                            )}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </motion.div>
@@ -4452,77 +4467,258 @@ const InitiativesPage = ({ language, initiatives, onRefresh }: { language: Langu
 
 interface ChatbotProps {
   language: Language;
+  setView: (v: View) => void;
 }
 
-const Chatbot = ({ language }: ChatbotProps) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [messages, setMessages] = useState([
-        { 
-            text: language === 'hi' ? "नमस्ते! मैं आपका नागरिक सहायक हूँ। मैं आज आपकी कैसे मदद कर सकता हूँ?" : "Hello! I'm your Citizen Assistant. How can I help you today?", 
-            sender: 'bot' 
-        }
-    ]);
-    const [input, setInput] = useState('');
+interface ChatMessage {
+  text: string;
+  sender: 'user' | 'bot';
+  sources?: string[];
+  suggestedActions?: { label: string; view: string }[];
+  isLoading?: boolean;
+  isError?: boolean;
+}
 
-    const handleSend = () => {
-        if (!input) return;
-        setMessages([...messages, { text: input, sender: 'user' }]);
+const Chatbot = ({ language, setView }: ChatbotProps) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [isMinimized, setIsMinimized] = useState(false);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+    
+    const WELCOME_MSG: ChatMessage = { 
+        text: language === 'hi' 
+            ? "नमस्ते! 🙏 मैं नागरिक सहायक हूँ। CitizenConnect के बारे में, शिकायत दर्ज करने, सरकारी योजनाओं, और नागरिक सेवाओं के बारे में पूछें।" 
+            : "Hello! 🙏 I'm Nagarik Sahayak, your CitizenConnect assistant. Ask me about filing complaints, government schemes, tracking issues, or civic services.", 
+        sender: 'bot',
+        suggestedActions: [
+            { label: 'File a Complaint', view: 'dashboard' },
+            { label: 'Government Schemes', view: 'schemes' },
+        ]
+    };
+    
+    const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MSG]);
+    const [input, setInput] = useState('');
+    const [isTyping, setIsTyping] = useState(false);
+
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages, isTyping]);
+
+    useEffect(() => {
+        if (isOpen && !isMinimized) {
+            setTimeout(() => inputRef.current?.focus(), 300);
+        }
+    }, [isOpen, isMinimized]);
+
+    const handleSend = async () => {
+        if (!input.trim() || isTyping) return;
+        
+        const userMsg = input.trim();
         setInput('');
-        setTimeout(() => {
-            setMessages(prev => [...prev, { 
-                text: language === 'hi' ? "मैंने आपकी पूछताछ दर्ज कर ली है। एक अधिकारी जल्द ही जवाब देगा। क्या आप इस बीच योजना पात्रता की जांच करना चाहेंगे?" : "I've logged your query. An official will respond shortly. Would you like to check scheme eligibility in the meantime?", 
-                sender: 'bot' 
+        setMessages(prev => [...prev, { text: userMsg, sender: 'user' }]);
+        setIsTyping(true);
+        
+        try {
+            const history = messages.slice(-6).map(m => ({
+                role: m.sender === 'user' ? 'user' : 'assistant',
+                content: m.text
+            }));
+            
+            const response = await fetch('/api/chatbot/message', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: userMsg, history })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                setMessages(prev => [...prev, {
+                    text: data.answer,
+                    sender: 'bot',
+                    sources: data.sources?.length > 0 ? data.sources : undefined,
+                    suggestedActions: data.suggestedActions?.length > 0 ? data.suggestedActions : undefined,
+                }]);
+            } else {
+                throw new Error(data.message || 'API error');
+            }
+        } catch (err) {
+            setMessages(prev => [...prev, {
+                text: language === 'hi' 
+                    ? 'माफ करें, अभी connection problem है। थोड़ी देर बाद try करें।'
+                    : 'Sorry, connection issue right now. Please try again shortly.',
+                sender: 'bot',
+                isError: true
             }]);
-        }, 1000);
+        } finally {
+            setIsTyping(false);
+        }
+    };
+
+    const handleQuickAction = (view: string) => {
+        setView(view as View);
+        setIsOpen(false);
     };
 
     return (
         <div className="fixed bottom-8 right-8 z-50">
             <AnimatePresence>
-                {isOpen && (
+                {isOpen && !isMinimized && (
                     <motion.div 
                         initial={{ opacity: 0, scale: 0.8, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.8, y: 20 }}
-                        className="mb-4 h-[450px] w-80 rounded-3xl bg-white dark:bg-slate-900 shadow-2xl border border-gray-100 dark:border-slate-800 overflow-hidden flex flex-col"
+                        className="mb-4 w-[360px] rounded-3xl bg-white dark:bg-slate-900 shadow-2xl border border-gray-100 dark:border-slate-800 overflow-hidden flex flex-col"
+                        style={{ height: '520px' }}
                     >
-                        <div className="bg-primary p-4 text-white flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-md">
-                                    <MessageSquare size={16} />
+                        {/* Header */}
+                        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-4 text-white flex items-center justify-between shrink-0">
+                            <div className="flex items-center gap-3">
+                                <div className="relative">
+                                    <div className="h-9 w-9 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-md border border-white/30">
+                                        <Bot size={18} />
+                                    </div>
+                                    <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-emerald-400 rounded-full border-2 border-indigo-700" />
                                 </div>
-                                <span className="font-bold text-sm">{language === 'hi' ? 'नागरिक सहायक' : 'Citizen Assistant'}</span>
+                                <div>
+                                    <span className="font-bold text-sm block leading-none">
+                                        {language === 'hi' ? 'नागरिक सहायक' : 'Nagarik Sahayak'}
+                                    </span>
+                                    <span className="text-[10px] text-blue-200 font-medium">
+                                        {isTyping ? (language === 'hi' ? 'टाइप कर रहा है...' : 'Typing...') : (language === 'hi' ? 'ऑनलाइन • RAG संचालित' : 'Online • RAG Powered')}
+                                    </span>
+                                </div>
                             </div>
-                            <button onClick={() => setIsOpen(false)}><X size={18} /></button>
+                            <div className="flex items-center gap-2">
+                                <button 
+                                    onClick={() => setMessages([WELCOME_MSG])}
+                                    title="Clear chat"
+                                    className="p-1.5 rounded-lg hover:bg-white/20 transition-colors text-blue-200 hover:text-white"
+                                >
+                                    <Activity size={14} />
+                                </button>
+                                <button 
+                                    onClick={() => setIsOpen(false)}
+                                    className="p-1.5 rounded-lg hover:bg-white/20 transition-colors"
+                                >
+                                    <X size={16} />
+                                </button>
+                            </div>
                         </div>
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
-                           {messages.map((m, i) => (
-                               <div key={i} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                   <div className={`max-w-[80%] p-3 rounded-2xl text-xs font-medium leading-relaxed ${m.sender === 'user' ? 'bg-primary text-white rounded-br-none' : 'bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-gray-200 rounded-bl-none'}`}>
-                                       {m.text}
-                                   </div>
+
+                        {/* Messages */}
+                        <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-slate-50/50 dark:bg-slate-950/50">
+                            {messages.map((m, i) => (
+                                <div key={i} className={`flex flex-col gap-2 ${m.sender === 'user' ? 'items-end' : 'items-start'}`}>
+                                    <div className={`max-w-[85%] px-4 py-3 rounded-2xl text-xs leading-relaxed font-medium ${
+                                        m.sender === 'user' 
+                                            ? 'bg-blue-600 text-white rounded-br-none shadow-md shadow-blue-200 dark:shadow-none'
+                                            : m.isError
+                                            ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-500/20 rounded-bl-none'
+                                            : 'bg-white dark:bg-slate-800 text-gray-800 dark:text-gray-200 rounded-bl-none shadow-sm border border-gray-100 dark:border-slate-700'
+                                    }`}>
+                                        {m.text}
+                                    </div>
+                                    
+                                    {m.sources && m.sources.length > 0 && (
+                                        <div className="flex flex-wrap gap-1 px-1">
+                                            {m.sources.slice(0, 2).map((s, j) => (
+                                                <span key={j} className="text-[9px] font-bold text-gray-400 dark:text-gray-600 bg-gray-100 dark:bg-slate-800 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                                    📚 {s}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+                                    
+                                    {m.suggestedActions && m.suggestedActions.length > 0 && (
+                                        <div className="flex flex-wrap gap-2 px-1">
+                                            {m.suggestedActions.map((action, j) => (
+                                                <button
+                                                    key={j}
+                                                    onClick={() => handleQuickAction(action.view)}
+                                                    className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-500/30 px-3 py-1.5 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all flex items-center gap-1"
+                                                >
+                                                    <ExternalLink size={10} /> {action.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
-                           ))}
+                            ))}
+                            
+                            {isTyping && (
+                                <div className="flex items-start gap-2">
+                                    <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 px-4 py-3 rounded-2xl rounded-bl-none shadow-sm">
+                                        <div className="flex gap-1 items-center h-4">
+                                            <div className="h-2 w-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                                            <div className="h-2 w-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                                            <div className="h-2 w-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            <div ref={messagesEndRef} />
                         </div>
-                        <div className="p-4 border-t border-gray-100 dark:border-slate-800 flex gap-2">
-                           <input 
+
+                        {/* Quick Suggestions */}
+                        {!isTyping && messages.length <= 1 && (
+                            <div className="px-3 pb-2 flex gap-2 flex-wrap shrink-0 bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800 pt-2">
+                                {[
+                                    language === 'hi' ? 'शिकायत कैसे करें?' : 'How to file complaint?',
+                                    language === 'hi' ? 'योजनाएं बताओ' : 'Tell me about schemes',
+                                    'Emergency numbers',
+                                ].map((q, i) => (
+                                    <button key={i} onClick={() => { setInput(q); setTimeout(handleSend, 100); }}
+                                        className="text-[10px] font-bold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-slate-700 transition-all border border-gray-200 dark:border-slate-700">
+                                        {q}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Input */}
+                        <div className="p-3 border-t border-gray-100 dark:border-slate-800 flex gap-2 items-center shrink-0 bg-white dark:bg-slate-900">
+                            <input 
+                                ref={inputRef}
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                                placeholder={language === 'hi' ? "एक संदेश लिखें..." : "Type a message..."} 
-                                className="flex-1 text-xs border border-gray-100 dark:border-slate-800 rounded-xl px-3 py-2 outline-none focus:border-primary dark:bg-slate-950 dark:text-white" 
-                           />
-                           <button onClick={handleSend} className="h-8 w-8 rounded-lg bg-primary text-white flex items-center justify-center shrink-0"><Send size={14} /></button>
+                                onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+                                placeholder={language === 'hi' ? "कुछ पूछें..." : "Ask something about CitizenConnect..."} 
+                                className="flex-1 text-xs border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2.5 outline-none focus:border-blue-400 dark:bg-slate-950 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 transition-colors"
+                                disabled={isTyping}
+                            />
+                            <button 
+                                onClick={handleSend}
+                                disabled={isTyping || !input.trim()}
+                                className="h-9 w-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-blue-200 dark:shadow-none"
+                            >
+                                <Send size={14} />
+                            </button>
                         </div>
                     </motion.div>
                 )}
             </AnimatePresence>
-            <button 
-                onClick={() => setIsOpen(!isOpen)}
-                className="h-14 w-14 rounded-full bg-primary text-white shadow-xl shadow-blue-200 dark:shadow-none flex items-center justify-center transition-transform hover:scale-110 active:scale-95"
+            
+            {/* FAB Button */}
+            <motion.button 
+                onClick={() => { setIsOpen(!isOpen); setIsMinimized(false); }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                className="h-14 w-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-xl shadow-blue-300/40 dark:shadow-blue-900/50 flex items-center justify-center relative"
             >
-                {isOpen ? <X size={24} /> : <MessageSquare size={24} />}
-            </button>
+                <AnimatePresence mode="wait">
+                    {isOpen ? (
+                        <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}>
+                            <X size={24} />
+                        </motion.div>
+                    ) : (
+                        <motion.div key="open" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }}>
+                            <MessageSquare size={24} />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+                <span className="absolute inset-0 rounded-full bg-blue-500/30 animate-ping" />
+            </motion.button>
         </div>
     );
 };
@@ -6189,7 +6385,7 @@ export default function App() {
         </main>
       </div>
 
-      <Chatbot language={language} />
+      <Chatbot language={language} setView={setView} />
 
       {!isDashboardView && (
           <footer className="border-t border-gray-100 dark:border-slate-800 py-12 bg-white dark:bg-slate-950 transition-colors">

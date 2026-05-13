@@ -7,6 +7,7 @@ const authRoutes = require('./routes/authRoutes');
 const schemeRoutes = require('./routes/schemeRoutes');
 const donationRoutes = require('./routes/donationRoutes');
 const initiativeRoutes = require('./routes/initiativeRoutes');
+const chatbotRoutes = require('./routes/chatbotRoutes');
 
 
 // Load environment variables
@@ -45,42 +46,48 @@ app.use('/api/auth', authRoutes);
 app.use('/api/schemes', schemeRoutes);
 app.use('/api/donations', donationRoutes);
 app.use('/api/initiatives', initiativeRoutes);
+app.use('/api/chatbot', chatbotRoutes);
 
 
 // Seed Initiatives Route
 app.get('/api/seed-initiatives', async (req, res) => {
     try {
         const Initiative = require('./models/Initiative');
-        const count = await Initiative.countDocuments();
-        if (count > 0) return res.send('Initiatives already seeded');
+        await Initiative.deleteMany({}); // Clear existing mock data
 
         const samples = [
             {
-                title: "Sector 15 Cleanliness Drive",
-                description: "Join us for a weekend drive to clean up the local parks and residential areas. Gloves and bags will be provided.",
+                title: "Yamuna Riverfront Cleaning",
+                description: "Massive cleanliness drive at the Yamuna banks. Join us to remove plastic waste and restore the river's beauty. We provide safety gear.",
                 category: "Cleanliness",
-                volunteersRequired: 50,
-                volunteersJoined: 12,
+                volunteersRequired: 150,
+                volunteersJoined: 67,
+                groupLink: "https://chat.whatsapp.com/example-yamuna-clean",
                 images: ["https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?q=80&w=2670&auto=format&fit=crop"],
-                location: { lat: 28.4595, lng: 77.0266 }
+                location: { lat: 28.6139, lng: 77.2494, address: "Nigambodh Ghat, Delhi" },
+                status: "Active"
             },
             {
-                title: "Community Tree Plantation",
-                description: "Let's make our city greener! We are planting 500 saplings across the north zone. Bring your own shovel!",
+                title: "Gurugram Green Belt Plantation",
+                description: "Planting 1000 native trees along the Golf Course Extension road to create an urban forest. Open for all age groups.",
                 category: "Greenery",
-                volunteersRequired: 100,
-                volunteersJoined: 45,
+                volunteersRequired: 200,
+                volunteersJoined: 112,
+                groupLink: "https://t.me/gurugram_greenery",
                 images: ["https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2626&auto=format&fit=crop"],
-                location: { lat: 28.6139, lng: 77.2090 }
+                location: { lat: 28.4595, lng: 77.0266, address: "Sector 56, Gurugram" },
+                status: "Active"
             },
             {
-                title: "Safety Awareness Workshop",
-                description: "A workshop on emergency response and basic first aid for school children and parents.",
+                title: "Noida Night Vigilance Group",
+                description: "Volunteer-led night patrols in residential sectors to assist local police and ensure elderly safety.",
                 category: "Safety",
-                volunteersRequired: 20,
-                volunteersJoined: 8,
+                volunteersRequired: 40,
+                volunteersJoined: 24,
+                groupLink: "https://chat.whatsapp.com/noida-safety-vigil",
                 images: ["https://images.unsplash.com/photo-1582213726868-39c9efeb2475?q=80&w=2670&auto=format&fit=crop"],
-                location: { lat: 28.5355, lng: 77.3910 }
+                location: { lat: 28.5355, lng: 77.3910, address: "Sector 62, Noida" },
+                status: "Active"
             }
         ];
 
@@ -94,6 +101,29 @@ app.get('/api/seed-initiatives', async (req, res) => {
 // Test Route
 app.get('/', (req, res) => {
     res.send('CitizenConnect Backend Running');
+});
+
+// Seed Schemes Route — clears stale data and inserts all 21 fresh schemes
+app.get('/api/seed-schemes', async (req, res) => {
+    try {
+        const Scheme = require('./models/Scheme');
+        const { scrapeSchemes } = require('./services/schemeService');
+        
+        // Force clear all existing scheme data
+        await Scheme.deleteMany({});
+        console.log('🗑️  [SEED] Cleared existing schemes');
+        
+        // Trigger sync (inserts all VERIFIED_SCHEMES via upsert)
+        const schemes = await scrapeSchemes();
+        
+        res.status(201).json({ 
+            message: `✅ ${schemes.length} schemes seeded successfully!`, 
+            count: schemes.length,
+            data: schemes.map(s => ({ title: s.title, type: s.type, category: s.category }))
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 });
 
 // Debug Route for Gemini
