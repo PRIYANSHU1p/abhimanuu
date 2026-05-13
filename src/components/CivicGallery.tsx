@@ -54,7 +54,7 @@ export const CivicGallery = ({ language }: { language: 'en' | 'hi' }) => {
     };
 
     return (
-        <div className="relative h-[350px] w-full max-w-full mx-auto rounded-[2rem] overflow-hidden bg-slate-950 border border-slate-200/10 dark:border-slate-800 shadow-2xl group shadow-blue-500/10">
+        <div className="relative h-[350px] w-full max-w-full mx-auto rounded-[2rem] overflow-hidden bg-white dark:bg-slate-950 border border-gray-100 dark:border-slate-800 shadow-2xl group shadow-blue-500/10">
             <AnimatePresence initial={false} custom={direction}>
                 <motion.div
                     key={activeIndex}
@@ -70,7 +70,7 @@ export const CivicGallery = ({ language }: { language: 'en' | 'hi' }) => {
                     }}
                     className="absolute inset-0"
                 >
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent z-10" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 dark:from-slate-950/90 via-slate-900/20 dark:via-slate-950/20 to-transparent z-10" />
                     <img 
                         src={images[activeIndex].url} 
                         alt={images[activeIndex].title}

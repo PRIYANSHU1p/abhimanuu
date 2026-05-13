@@ -96,14 +96,14 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 text-center">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6 text-center transition-colors duration-300">
           <div className="max-w-md w-full space-y-6">
             <div className="h-20 w-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto border border-red-500/20">
               <AlertCircle className="text-red-500" size={40} />
             </div>
             <div className="space-y-2">
-              <h1 className="text-2xl font-black text-white uppercase tracking-tight">Something went wrong</h1>
-              <p className="text-slate-400 text-sm leading-relaxed">
+              <h1 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Something went wrong</h1>
+              <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
                 The application encountered a runtime error. This might be due to a malformed API response or a rendering issue.
               </p>
             </div>
@@ -155,6 +155,7 @@ type View =
   | 'help-support'
   | 'my-complaints'
   | 'complaint-details'
+  | 'monitoring'
   | 'forgot-password'
   | 'reset-password'
   | 'about';
@@ -536,41 +537,121 @@ type Language = 'en' | 'hi';
 type Theme = 'light' | 'dark';
 
 // --- Map Components ---
-const LiveMap = ({ complaints, language, center = [28.6139, 77.2090] }: { complaints: Complaint[], language: Language, center?: [number, number] }) => {
+const MapRecenter = ({ pos }: { pos: [number, number] }) => {
+  const map = useMap();
+  useEffect(() => {
+    map.setView(pos);
+  }, [pos, map]);
+  return null;
+};
+
+const LiveMap = ({ complaints, language, theme, center = [28.6139, 77.2090] }: { complaints: Complaint[], language: Language, theme: Theme, center?: [number, number] }) => {
+  const [filter, setFilter] = useState<'All' | 'Active' | 'Resolved'>('All');
   const t = (key: keyof typeof TRANSLATIONS['en']) => TRANSLATIONS[language][key] || key;
   
+  const filteredComplaints = complaints.filter(c => {
+    if (filter === 'All') return true;
+    if (filter === 'Resolved') return c.status === 'Resolved';
+    return c.status !== 'Resolved';
+  });
+
+  const activeCount = complaints.filter(c => c.status !== 'Resolved').length;
+  const resolvedCount = complaints.filter(c => c.status === 'Resolved').length;
+
   return (
-    <div className="glass-card rounded-[2.5rem] overflow-hidden border border-white/5 shadow-2xl relative h-[450px] group">
-      <div className="absolute top-6 left-6 z-[1000] flex flex-col gap-2">
-        <div className="bg-[#060B16]/80 backdrop-blur-md border border-white/10 px-4 py-2 rounded-2xl flex items-center gap-3">
-          <div className="h-2 w-2 rounded-full bg-glow-green animate-pulse" />
-          <span className="text-[10px] font-black uppercase tracking-widest text-white">Live Civic Map</span>
+    <div className="glass-card rounded-[2.5rem] overflow-hidden border border-gray-100 dark:border-white/5 shadow-2xl relative h-[450px] group transition-colors duration-300">
+      {/* Status Filter Overlay */}
+      <div className="absolute top-6 left-6 z-[1000] flex flex-col gap-3">
+        <div className="bg-white/90 dark:bg-[#060B16]/90 backdrop-blur-md border border-gray-100 dark:border-white/10 px-4 py-2 rounded-2xl flex items-center gap-3 shadow-xl">
+          <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+          <span className="text-[10px] font-black uppercase tracking-widest text-gray-900 dark:text-white">Live Operations</span>
+        </div>
+        
+        <div className="flex bg-white/90 dark:bg-[#060B16]/90 backdrop-blur-md p-1 rounded-xl border border-gray-100 dark:border-white/10 shadow-lg">
+          {(['All', 'Active', 'Resolved'] as const).map(f => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-tighter transition-all ${
+                filter === f 
+                ? 'bg-primary text-white shadow-lg' 
+                : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              {f}
+            </button>
+          ))}
         </div>
       </div>
 
-      <MapContainer center={center} zoom={13} scrollWheelZoom={false} className="h-full w-full z-0 grayscale-[0.2] invert-[0.1]">
+      {/* Stats Pulse Overlay */}
+      <div className="absolute top-6 right-6 z-[1000] hidden sm:flex gap-2">
+        <div className="bg-white/90 dark:bg-[#060B16]/90 backdrop-blur-md px-3 py-2 rounded-xl border border-gray-100 dark:border-white/10 shadow-lg flex items-center gap-2">
+          <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">Active:</span>
+          <span className="text-xs font-black text-blue-500">{activeCount}</span>
+        </div>
+        <div className="bg-white/90 dark:bg-[#060B16]/90 backdrop-blur-md px-3 py-2 rounded-xl border border-gray-100 dark:border-white/10 shadow-lg flex items-center gap-2">
+          <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">Fixed:</span>
+          <span className="text-xs font-black text-emerald-500">{resolvedCount}</span>
+        </div>
+      </div>
+
+      {/* Bottom Legend Overlay */}
+      <div className="absolute bottom-6 left-6 z-[1000] hidden md:block">
+        <div className="bg-white/90 dark:bg-[#060B16]/90 backdrop-blur-md p-4 rounded-2xl border border-gray-100 dark:border-white/10 shadow-2xl space-y-2">
+          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-2">Issue Status Guide</p>
+          <div className="flex items-center gap-3">
+            <div className="h-2 w-2 rounded-full bg-amber-500" />
+            <span className="text-[9px] font-bold text-gray-600 dark:text-gray-300 uppercase">Submitted</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="h-2 w-2 rounded-full bg-blue-500" />
+            <span className="text-[9px] font-bold text-gray-600 dark:text-gray-300 uppercase">In Progress</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="h-2 w-2 rounded-full bg-emerald-500" />
+            <span className="text-[9px] font-bold text-gray-600 dark:text-gray-300 uppercase">Fixed</span>
+          </div>
+        </div>
+      </div>
+
+      <MapContainer center={center} zoom={13} scrollWheelZoom={false} className="h-full w-full z-0">
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          url={theme === 'dark' 
+            ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" 
+            : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"}
         />
-        {complaints.map((c, i) => {
+        <MapRecenter pos={center} />
+        {filteredComplaints.map((c, i) => {
           if (!c.location) return null;
+          
+          const status = c.status || 'Submitted';
+          const color = status === 'Resolved' ? '#10b981' : (status === 'Submitted' ? '#f59e0b' : '#3b82f6');
+          
+          const icon = L.divIcon({
+            className: 'pulsing-marker-wrapper',
+            html: `<div class="marker-pulse" style="background-color: ${color}; box-shadow: 0 0 15px ${color}80"></div>`,
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
+          });
+
           return (
             <Marker 
               key={i} 
               position={[c.location.lat, c.location.lng]}
+              icon={icon}
             >
               <Popup className="custom-popup">
-                <div className="p-2 min-w-[150px]">
-                  <h4 className="text-[11px] font-black uppercase text-primary mb-1">{c.department}</h4>
-                  <p className="text-sm font-bold text-gray-900 mb-2">{c.subject || c.category}</p>
-                  <div className="flex items-center justify-between">
-                    <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${
-                      c.status === 'Resolved' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'
-                    }`}>
-                      {c.status}
-                    </span>
-                    <span className="text-[8px] font-bold text-gray-500">{c.pincode}</span>
+                <div className="p-3 min-w-[180px]">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="h-2 w-2 rounded-full animate-pulse" style={{backgroundColor: color}} />
+                    <h4 className="text-[10px] font-black uppercase text-primary tracking-tighter">{c.department}</h4>
+                  </div>
+                  <p className="text-sm font-black text-gray-900 dark:text-white mb-2 leading-tight">{c.subject || c.category}</p>
+                  <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-white/10">
+                    <span className="text-[9px] font-black uppercase text-gray-400">{c.status}</span>
+                    <span className="text-[9px] font-black text-primary bg-primary/10 px-2 py-0.5 rounded-full">{c.pincode}</span>
                   </div>
                 </div>
               </Popup>
@@ -582,7 +663,7 @@ const LiveMap = ({ complaints, language, center = [28.6139, 77.2090] }: { compla
   );
 };
 
-const LocationPicker = ({ position, setPosition, setAddress }: { position: [number, number], setPosition: (p: [number, number]) => void, setAddress: (a: string) => void }) => {
+const LocationPicker = ({ position, setPosition, setAddress, theme }: { position: [number, number], setPosition: (p: [number, number]) => void, setAddress: (a: string) => void, theme: Theme }) => {
   const MapEvents = () => {
     useMapEvents({
       click(e) {
@@ -607,44 +688,22 @@ const LocationPicker = ({ position, setPosition, setAddress }: { position: [numb
     return null;
   };
 
-  const locateMe = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((pos) => {
-        const { latitude, longitude } = pos.coords;
-        setPosition([latitude, longitude]);
-        fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`)
-          .then(res => res.json())
-          .then(data => {
-            if (data && data.display_name) setAddress(data.display_name);
-          })
-          .catch(console.error);
-      });
-    }
-  };
-
   return (
-    <div className="h-72 w-full rounded-[2rem] overflow-hidden border border-white/10 relative shadow-2xl mt-4 group">
+    <div className="h-80 w-full rounded-[2rem] overflow-hidden border border-gray-100 dark:border-white/10 relative shadow-2xl mt-4 group transition-colors duration-300">
       <MapContainer center={position} zoom={15} scrollWheelZoom={true} className="h-full w-full z-0">
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <TileLayer url={theme === 'dark' 
+          ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" 
+          : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"} 
+        />
         <Marker position={position} />
         <MapEvents />
         <MapRecenter pos={position} />
       </MapContainer>
       
-      <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2">
-        <button 
-          onClick={locateMe}
-          className="h-10 w-10 bg-white dark:bg-[#060B16] text-primary rounded-xl flex items-center justify-center shadow-lg border border-white/10 hover:scale-110 active:scale-95 transition-all"
-          title="Center on My Location"
-        >
-          <Navigation size={18} />
-        </button>
-      </div>
-
-      <div className="absolute bottom-4 left-4 z-[1000] bg-[#060B16]/80 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10 text-[9px] font-black text-white uppercase tracking-[0.2em]">
+      <div className="absolute bottom-4 left-4 z-[1000] bg-white/80 dark:bg-[#060B16]/80 backdrop-blur-md px-4 py-2 rounded-2xl border border-gray-100 dark:border-white/10 text-[9px] font-black text-gray-900 dark:text-white uppercase tracking-[0.2em]">
         <div className="flex items-center gap-2">
           <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-          Touch to set position
+          {document.documentElement.lang === 'hi' ? 'स्थान चुनने के लिए टैप करें' : 'Touch to set position'}
         </div>
       </div>
     </div>
@@ -674,33 +733,43 @@ const PublicNavbar = ({
   const t = (key: keyof typeof TRANSLATIONS['en']) => TRANSLATIONS[language][key] || key;
 
   return (
-    <nav className="sticky top-0 z-40 w-full border-b border-gray-100 bg-white/80 dark:bg-slate-900/80 dark:border-slate-800 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('landing')}>
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-white">
-            <LayoutDashboard size={18} />
+    <nav className="sticky top-0 z-50 w-full border-b border-gray-100 dark:border-white/5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md transition-colors duration-300">
+      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setView('landing')}>
+          <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
+            <LayoutDashboard size={22} />
           </div>
-          <span className="text-xl font-bold tracking-tight text-primary">CitizenConnect</span>
+          <span className="text-2xl font-black tracking-tighter text-primary">CitizenConnect</span>
         </div>
 
         <div className="hidden md:flex items-center gap-8">
-          <button onClick={() => setView('landing')} className={`text-sm font-medium transition-colors hover:text-primary ${currentView === 'landing' ? 'text-primary' : 'text-gray-600 dark:text-gray-400'}`}>{t('home')}</button>
-          <button onClick={() => setView('about')} className={`text-sm font-medium transition-colors hover:text-primary ${currentView === 'about' ? 'text-primary' : 'text-gray-600 dark:text-gray-400'}`}>{t('about')}</button>
+          <button 
+            onClick={() => setView('landing')} 
+            className={`text-sm font-bold transition-all hover:text-primary ${currentView === 'landing' ? 'text-primary' : 'text-gray-600 dark:text-gray-400'}`}
+          >
+            {t('home')}
+          </button>
+          <button 
+            onClick={() => setView('about')} 
+            className={`text-sm font-bold transition-all hover:text-primary ${currentView === 'about' ? 'text-primary' : 'text-gray-600 dark:text-gray-400'}`}
+          >
+            {t('about')}
+          </button>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 mr-2 border-r border-gray-100 dark:border-slate-800 pr-4">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-1 sm:gap-2 mr-2 border-r border-gray-100 dark:border-white/10 pr-2 sm:pr-4">
             <button 
               onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} 
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors text-gray-600 dark:text-gray-400"
-              title={t('theme')}
+              className="p-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 transition-all text-gray-500 dark:text-gray-400"
+              title="Toggle Theme"
             >
-              {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+              {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
             </button>
             <select 
               value={language}
               onChange={(e) => setLanguage(e.target.value as Language)}
-              className="bg-transparent text-xs font-bold text-gray-600 dark:text-gray-400 outline-none cursor-pointer hover:text-primary transition-colors"
+              className="bg-transparent text-xs font-bold text-gray-500 dark:text-gray-400 outline-none cursor-pointer hover:text-primary transition-colors py-2"
             >
               <option value="en">EN</option>
               <option value="hi">हिन्दी</option>
@@ -709,26 +778,27 @@ const PublicNavbar = ({
 
           {user ? (
             <div className="flex items-center gap-3">
-              <div className="flex flex-col items-end">
-                <span className="text-xs font-semibold text-gray-900 dark:text-white leading-none">{user.name}</span>
-                <div className="flex gap-2">
-                  <button onClick={onLogout} className="text-[10px] text-gray-500 hover:text-primary">{t('logout')}</button>
-                </div>
+              <div className="hidden sm:flex flex-col items-end">
+                <span className="text-xs font-bold text-gray-900 dark:text-white leading-none">{user.name}</span>
+                <button onClick={onLogout} className="text-[10px] font-bold text-red-500 hover:underline mt-1">{t('logout')}</button>
               </div>
               <div 
                 onClick={() => setView('profile')}
-                className="h-9 w-9 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center border border-blue-100 dark:border-blue-800 cursor-pointer hover:bg-blue-100 transition-colors"
+                className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 cursor-pointer hover:bg-primary hover:text-white transition-all shadow-inner"
               >
-                <UserPlus size={18} className="text-blue-600 dark:text-blue-400" />
+                <User size={18} className="transition-colors" />
               </div>
             </div>
           ) : (
-            <>
-              <button onClick={() => setView('login')} className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-primary">{t('login')}</button>
-              <button onClick={() => setView('signup')} className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-white transition-all hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-200">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <button onClick={() => setView('login')} className="text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-primary transition-colors px-2">{t('login')}</button>
+              <button 
+                onClick={() => setView('signup')} 
+                className="rounded-full bg-primary px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-blue-700 hover:shadow-xl hover:shadow-primary/20 active:scale-95"
+              >
                 {t('signup')}
               </button>
-            </>
+            </div>
           )}
         </div>
       </div>
@@ -744,7 +814,11 @@ const DashboardNavbar = ({
   language,
   setLanguage,
   theme,
-  setTheme
+  setTheme,
+  onMenuToggle,
+  searchQuery,
+  onSearchChange,
+  handleGlobalSearch
 }: { 
   currentView: View, 
   setView: (v: View) => void, 
@@ -753,81 +827,108 @@ const DashboardNavbar = ({
   language: Language,
   setLanguage: (l: Language) => void,
   theme: Theme,
-  setTheme: (t: Theme) => void
+  setTheme: (t: Theme) => void,
+  onMenuToggle: () => void,
+  searchQuery?: string,
+  onSearchChange?: (q: string) => void,
+  handleGlobalSearch: (q: string) => void
 }) => {
   const t = (key: keyof typeof TRANSLATIONS['en']) => TRANSLATIONS[language][key] || key;
   const isHomeActive = currentView === 'dashboard';
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#1a1c2e] text-white">
-      <div className="mx-auto flex h-20 max-w-full items-center justify-between px-6 gap-6">
+    <nav className="sticky top-0 z-50 w-full border-b border-gray-100 dark:border-white/10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md text-gray-900 dark:text-white transition-colors duration-300">
+      <div className="mx-auto flex h-20 max-w-full items-center justify-between px-4 sm:px-6 gap-2 sm:gap-6">
+        {/* Mobile Menu Button */}
+        <button 
+          onClick={onMenuToggle}
+          className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-colors text-gray-500 dark:text-gray-400"
+        >
+          <Menu size={24} />
+        </button>
+
         {/* Logo Section */}
         <div className="flex items-center gap-3 cursor-pointer shrink-0" onClick={() => setView('dashboard')}>
-          <div className="h-10 w-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shadow-lg shadow-blue-500/10">
+          <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-lg shadow-primary/5">
             <LayoutDashboard size={22} />
           </div>
-          <div className="flex flex-col">
-            <span className="text-xl font-bold tracking-tight text-white leading-none">CitizenConnect</span>
-            <span className="text-[10px] text-gray-400 font-medium tracking-wide">Smart City. Better Tomorrow.</span>
+          <div className="flex flex-col hidden sm:flex">
+            <span className="text-xl font-bold tracking-tight text-gray-900 dark:text-white leading-none">CitizenConnect</span>
+            <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium tracking-wide">Smart City. Better Tomorrow.</span>
           </div>
         </div>
 
-        {/* Menu & Navigation Links */}
-        <div className="flex items-center gap-8">
-          <button className="p-2 hover:bg-white/5 rounded-lg transition-colors text-gray-400 hover:text-white">
-            <Menu size={24} />
-          </button>
-          
-          <div className="flex items-center gap-8">
+        {/* Menu & Navigation Links - Hidden on mobile, shown on lg */}
+        <div className="hidden lg:flex items-center gap-6">
+          <div className="flex items-center gap-6">
             <button 
               onClick={() => setView('dashboard')} 
-              className={`relative py-1 text-sm font-bold transition-all ${isHomeActive ? 'text-blue-400' : 'text-gray-400 hover:text-white'}`}
+              className={`relative py-1 text-sm font-bold transition-all ${isHomeActive ? 'text-primary' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
             >
               {t('home')}
               {isHomeActive && (
-                <motion.div layoutId="nav-underline" className="absolute -bottom-1.5 left-0 right-0 h-[2px] bg-blue-500 rounded-full" />
+                <motion.div layoutId="nav-underline" className="absolute -bottom-1.5 left-0 right-0 h-[2px] bg-primary rounded-full" />
               )}
             </button>
             <button 
               onClick={() => setView('about')} 
-              className={`relative py-1 text-sm font-bold transition-all ${currentView === 'about' ? 'text-blue-400' : 'text-gray-400 hover:text-white'}`}
+              className={`relative py-1 text-sm font-bold transition-all ${currentView === 'about' ? 'text-primary' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
             >
               {t('about')}
               {currentView === 'about' && (
-                <motion.div layoutId="nav-underline" className="absolute -bottom-1.5 left-0 right-0 h-[2px] bg-blue-500 rounded-full" />
+                <motion.div layoutId="nav-underline" className="absolute -bottom-1.5 left-0 right-0 h-[2px] bg-primary rounded-full" />
               )}
             </button>
           </div>
         </div>
 
-        {/* Search Bar - Center */}
-        <div className="flex-1 max-w-2xl px-4">
-          <div className="relative group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+        {/* Search Bar - Center - Responsive width */}
+        <div className="flex-1 max-w-2xl px-2 hidden sm:block">
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (searchQuery) handleGlobalSearch(searchQuery);
+            }}
+            className="relative group"
+          >
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors" size={18} />
             <input 
               type="text" 
-              placeholder="Search services, schemes, departments..."
-              className="w-full bg-[#111322] border border-white/5 rounded-xl py-2.5 pl-12 pr-12 text-sm text-gray-200 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all shadow-inner"
+              value={searchQuery}
+              onChange={(e) => onSearchChange?.(e.target.value)}
+              placeholder="Search services, schemes, departments or search location..."
+              className="w-full bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-white/5 rounded-xl py-2.5 pl-12 pr-12 text-sm text-gray-900 dark:text-gray-200 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all shadow-inner"
             />
-            <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600" size={16} />
-          </div>
+            <button type="submit" className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
+              <Search size={16} />
+            </button>
+          </form>
         </div>
 
-        {/* Right Section: Notifications & Profile */}
-        <div className="flex items-center gap-8 shrink-0">
+        {/* Right Section: Notifications, Theme & Profile */}
+        <div className="flex items-center gap-4 sm:gap-8 shrink-0">
+          {/* Theme Toggle */}
+          <button 
+            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} 
+            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 transition-all text-gray-500 dark:text-gray-400"
+            title="Toggle Theme"
+          >
+            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+          </button>
+
           <button 
             onClick={() => setView('notifications')}
-            className="relative p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all"
+            className="relative p-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-all"
           >
             <Bell size={22} />
-            <span className="absolute top-1.5 right-1.5 h-4 w-4 bg-red-500 text-[10px] font-bold text-white flex items-center justify-center rounded-full border-2 border-[#1a1c2e]">3</span>
+            <span className="absolute top-1.5 right-1.5 h-4 w-4 bg-red-500 text-[10px] font-bold text-white flex items-center justify-center rounded-full border-2 border-white dark:border-slate-900">3</span>
           </button>
 
           {user && (
-            <div className="relative flex items-center gap-4 pl-4 border-l border-white/10 h-10">
+            <div className="relative flex items-center gap-2 sm:gap-4 pl-4 border-l border-gray-100 dark:border-white/10 h-10">
               <div 
-                className="h-10 w-10 rounded-full overflow-hidden border-2 border-blue-500/30 shadow-xl cursor-pointer hover:border-blue-500/60 transition-all" 
+                className="h-10 w-10 rounded-full overflow-hidden border-2 border-primary/20 shadow-xl cursor-pointer hover:border-primary transition-all" 
                 onClick={() => setView('profile')}
               >
                 <img 
@@ -836,15 +937,15 @@ const DashboardNavbar = ({
                   className="h-full w-full object-cover"
                 />
               </div>
-              <div className="hidden md:flex flex-col text-left">
-                <span className="text-sm font-bold text-white leading-none">{user.name}</span>
-                <span className="text-[11px] text-gray-500 font-medium">Citizen</span>
+              <div className="hidden lg:flex flex-col text-left">
+                <span className="text-sm font-bold text-gray-900 dark:text-white leading-none">{user.name}</span>
+                <span className="text-[11px] text-gray-500 font-medium capitalize">{user.role || 'Citizen'}</span>
               </div>
               <button 
                 onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                className="p-1 hover:bg-white/5 rounded-md transition-colors"
+                className="p-1 hover:bg-gray-100 dark:hover:bg-white/5 rounded-md transition-colors"
               >
-                <ChevronDown size={18} className={`text-gray-500 hover:text-white transition-transform ${showProfileDropdown ? 'rotate-180' : ''}`} />
+                <ChevronDown size={18} className={`text-gray-500 transition-transform ${showProfileDropdown ? 'rotate-180' : ''}`} />
               </button>
 
               <AnimatePresence>
@@ -855,25 +956,26 @@ const DashboardNavbar = ({
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute top-full right-0 mt-3 w-64 rounded-2xl bg-[#1e213a] border border-white/10 shadow-2xl p-4 z-50 overflow-hidden"
+                      className="absolute top-full right-0 mt-3 w-64 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-white/10 shadow-2xl p-4 z-50 overflow-hidden"
                     >
-                      <div className="flex items-center gap-4 p-2 mb-4 border-b border-white/5 pb-4">
-                        <div className="h-12 w-12 rounded-full overflow-hidden border border-blue-500/30">
+                      <div className="flex items-center gap-4 p-2 mb-4 border-b border-gray-100 dark:border-white/5 pb-4">
+                        <div className="h-12 w-12 rounded-full overflow-hidden border border-primary/20">
                           <img src={user.avatar || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=2574&auto=format&fit=crop"} className="h-full w-full object-cover" />
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-sm font-bold">{user.name}</span>
-                          <span className="text-[10px] text-gray-400">{user.email}</span>
+                          <span className="text-sm font-bold text-gray-900 dark:text-white">{user.name}</span>
+                          <span className="text-[10px] text-gray-500 dark:text-gray-400">{user.email}</span>
                         </div>
                       </div>
                       <div className="space-y-1">
-                        <button onClick={() => { setView('profile'); setShowProfileDropdown(false); }} className="w-full flex items-center gap-3 p-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white rounded-lg transition-colors">
+                        <button onClick={() => { setView('profile'); setShowProfileDropdown(false); }} className="w-full flex items-center gap-3 p-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-primary dark:hover:text-white rounded-lg transition-colors">
                           <User size={16} /> My Profile
                         </button>
-                        <button onClick={() => { setView('settings'); setShowProfileDropdown(false); }} className="w-full flex items-center gap-3 p-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white rounded-lg transition-colors">
+                        <button onClick={() => { setView('settings'); setShowProfileDropdown(false); }} className="w-full flex items-center gap-3 p-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-primary dark:hover:text-white rounded-lg transition-colors">
                           <Settings size={16} /> Settings
                         </button>
-                        <button onClick={() => { onLogout(); setShowProfileDropdown(false); }} className="w-full flex items-center gap-3 p-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors mt-2">
+                        <div className="h-px bg-gray-100 dark:bg-white/5 my-2" />
+                        <button onClick={() => { onLogout(); setShowProfileDropdown(false); }} className="w-full flex items-center gap-3 p-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors">
                           <LogOut size={16} /> Logout
                         </button>
                       </div>
@@ -885,14 +987,14 @@ const DashboardNavbar = ({
           )}
 
           {/* Language Toggle */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 border-l border-gray-100 dark:border-white/10 pl-4">
              <select 
                 value={language}
                 onChange={(e) => setLanguage(e.target.value as Language)}
-                className="bg-transparent text-xs font-bold text-gray-400 outline-none cursor-pointer hover:text-white transition-colors"
+                className="bg-transparent text-xs font-bold text-gray-500 dark:text-gray-400 outline-none cursor-pointer hover:text-primary transition-colors"
               >
                 <option value="en">EN</option>
-                <option value="hi">HI</option>
+                <option value="hi">हिन्दी</option>
               </select>
           </div>
         </div>
@@ -901,12 +1003,10 @@ const DashboardNavbar = ({
   );
 };
 
-const Sidebar = ({ setView, currentView, onLogout, language }: { setView: (v: View) => void, currentView: View, onLogout: () => void, language: Language }) => {
-  const isAnimalWelfare = currentView === 'animal-welfare';
-  const isSocialHelp = currentView === 'social-help';
-  
+const SidebarContent = ({ currentView, setView, language }: { currentView: View, setView: (v: View) => void, language: Language }) => {
   const items = [
     { id: 'dashboard', label: language === 'hi' ? 'डैशबोर्ड' : 'Dashboard', icon: Home },
+    { id: 'monitoring', label: language === 'hi' ? 'लाइव मॉनिटरिंग' : 'Live Monitoring', icon: Activity },
     { id: 'my-complaints', label: language === 'hi' ? 'मेरी शिकायतें' : 'My Complaints', icon: FileText },
     { id: 'animal-welfare', label: language === 'hi' ? 'पशु कल्याण' : 'Animal Welfare', icon: PawPrint },
     { id: 'social-help', label: language === 'hi' ? 'सामाजिक सहायता' : 'Social Help', icon: HeartHandshake },
@@ -919,47 +1019,60 @@ const Sidebar = ({ setView, currentView, onLogout, language }: { setView: (v: Vi
   ];
 
   return (
-    <div className={`hidden w-72 border-r md:flex flex-col shrink-0 sticky top-20 h-[calc(100vh-80px)] overflow-hidden transition-all duration-500 ${
-      isAnimalWelfare ? 'bg-[#060B16] border-glow-green/10' : 
-      isSocialHelp ? 'bg-[#060B16] border-pink-500/10' : 
-      'bg-[#0d0f1a] border-white/5'
-    }`}>
+    <div className="space-y-1 overflow-y-auto custom-scrollbar pr-1 h-full">
+      {items.map((item) => {
+        const Icon = item.icon;
+        const isActive = currentView === item.id;
+        const isAWTab = item.id === 'animal-welfare';
+        const isSHTab = item.id === 'social-help';
+        
+        return (
+          <button
+            key={item.id}
+            onClick={() => setView(item.id as View)}
+            className={`flex w-full items-center gap-4 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all group ${
+              isActive 
+                ? (isAWTab ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 
+                   isSHTab ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg shadow-pink-500/20' :
+                   'bg-primary text-white shadow-lg shadow-primary/20') 
+                : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-primary dark:hover:text-white'
+            }`}
+          >
+            <Icon size={18} className={`${isActive ? 'text-white' : 'text-gray-400 group-hover:text-primary dark:group-hover:text-white'}`} />
+            <span className="flex-1 text-left">{item.label}</span>
+            {item.badge && (
+              <span className={`h-4 w-4 rounded-full flex items-center justify-center text-[9px] font-bold ${isActive ? 'bg-white text-primary' : 'bg-red-500 text-white'}`}>
+                {item.badge}
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
+const Sidebar = ({ setView, currentView, onLogout, language }: { setView: (v: View) => void, currentView: View, onLogout: () => void, language: Language }) => {
+  const isAnimalWelfare = currentView === 'animal-welfare';
+  const isSocialHelp = currentView === 'social-help';
+  
+  const getSidebarBg = () => {
+    if (isAnimalWelfare) return 'bg-emerald-50/50 dark:bg-slate-950/50 border-emerald-500/10 dark:border-glow-green/10';
+    if (isSocialHelp) return 'bg-pink-50/50 dark:bg-slate-950/50 border-pink-500/10';
+    return 'bg-gray-50/50 dark:bg-slate-900/50 border-gray-100 dark:border-white/5';
+  };
+
+  return (
+    <div className={`hidden w-72 border-r md:flex flex-col shrink-0 sticky top-20 h-[calc(100vh-80px)] overflow-hidden transition-all duration-500 backdrop-blur-xl ${getSidebarBg()}`}>
       <div className="flex flex-col h-full p-4">
-        <div className="space-y-0.5 flex-1 overflow-y-auto custom-scrollbar pr-1">
-          {items.map((item) => {
-            const Icon = item.icon;
-            const isActive = currentView === item.id;
-            const isAWTab = item.id === 'animal-welfare';
-            const isSHTab = item.id === 'social-help';
-            
-            return (
-              <button
-                key={item.id}
-                onClick={() => setView(item.id as View)}
-                className={`flex w-full items-center gap-4 rounded-xl px-4 py-1.5 text-sm font-semibold transition-all group ${
-                  isActive 
-                    ? (isAWTab ? 'bg-glow-green text-[#060B16] shadow-lg shadow-glow-green/20' : 
-                       isSHTab ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg shadow-pink-500/20' :
-                       'bg-blue-600 text-white shadow-lg shadow-blue-600/20') 
-                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
-                }`}
-              >
-                <Icon size={18} className={`${isActive ? (isAWTab ? 'text-[#060B16]' : 'text-white') : 'text-gray-400 group-hover:text-white'}`} />
-                <span className="flex-1 text-left">{item.label}</span>
-                {item.badge && (
-                  <span className={`h-4 w-4 rounded-full flex items-center justify-center text-[9px] font-bold ${isActive ? 'bg-white text-blue-600' : 'bg-red-500 text-white'}`}>
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+        <div className="flex-1 overflow-hidden">
+          <SidebarContent currentView={currentView} setView={setView} language={language} />
         </div>
         
-        <div className="mt-auto pt-3 border-t border-white/5 space-y-3">
+        <div className="mt-auto pt-3 border-t border-gray-100 dark:border-white/5 space-y-3">
           <button
             onClick={onLogout}
-            className="flex w-full items-center gap-4 rounded-xl px-4 py-2 text-sm font-semibold text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-all"
+            className="flex w-full items-center gap-4 rounded-xl px-4 py-2 text-sm font-semibold text-gray-500 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-500 transition-all"
           >
             <LogOut size={18} />
             <span>{language === 'hi' ? 'लॉगआउट' : 'Logout'}</span>
@@ -971,11 +1084,11 @@ const Sidebar = ({ setView, currentView, onLogout, language }: { setView: (v: Vi
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.02 }}
               className={`relative group overflow-hidden rounded-2xl h-32 w-full border shadow-2xl transition-all duration-300 ${
-                isAnimalWelfare ? 'border-glow-green/30 hover:border-glow-green/50' : 
+                isAnimalWelfare ? 'border-emerald-500/30 hover:border-emerald-500/50' : 
                 isSocialHelp ? 'border-pink-500/30 hover:border-pink-500/50' : 
-                'border-white/10 hover:border-primary/30'
+                'border-gray-200 dark:border-white/10 hover:border-primary/30'
               }`}
             >
               <img 
@@ -987,12 +1100,12 @@ const Sidebar = ({ setView, currentView, onLogout, language }: { setView: (v: Vi
                 alt="Sidebar Banner" 
                 className="absolute inset-0 w-full h-full object-cover block transition-transform duration-700 group-hover:scale-110"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#060B16]/90 via-[#060B16]/30 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/30 to-transparent" />
               <div className="absolute bottom-0 left-0 p-3 space-y-1">
                 <p className={`text-[8px] font-black uppercase tracking-[0.2em] ${
-                  isAnimalWelfare ? 'text-glow-green' : 
+                  isAnimalWelfare ? 'text-emerald-400' : 
                   isSocialHelp ? 'text-pink-400' : 
-                  'text-primary'
+                  'text-primary-foreground'
                 }`}>
                   {isAnimalWelfare ? 'Every Life Matters' : isSocialHelp ? 'Compassion connects us.' : 'City Connect Hub'}
                 </p>
@@ -1847,9 +1960,12 @@ const NearbyOfficesModal = ({ isOpen, onClose, language }: { isOpen: boolean, on
           <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors shrink-0"><X size={20} /></button>
         </div>
         
-        <div className="h-64 rounded-2xl mb-8 relative overflow-hidden border border-white/5 z-0">
+        <div className="h-64 rounded-2xl mb-8 relative overflow-hidden border border-gray-100 dark:border-white/5 z-0">
           <MapContainer center={userPos || [28.6139, 77.2090]} zoom={12} style={{ height: '100%', width: '100%' }}>
-            <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+            <TileLayer url={document.documentElement.classList.contains('dark')
+              ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+              : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"} 
+            />
             <MapController center={userPos || (sortedOffices.length > 0 ? sortedOffices[0].pos : [28.6139, 77.2090])} />
             
             {userPos && (
@@ -1947,6 +2063,207 @@ const QuickActions = ({ language, setView, onEmergencyOpen, onOfficesOpen }: { l
   );
 };
 
+
+const LiveCivicMonitoringPage = ({ complaints, language, theme, setView, globalPosition, isSearchingLocation }: { 
+  complaints: Complaint[], 
+  language: Language, 
+  theme: Theme, 
+  setView: (v: View) => void,
+  globalPosition: [number, number],
+  isSearchingLocation: boolean
+}) => {
+    const activeComplaints = complaints.filter(c => c.status !== 'Resolved');
+    const resolvedComplaints = complaints.filter(c => c.status === 'Resolved');
+    
+    const deptStats = complaints.reduce((acc: any, c) => {
+        acc[c.department] = (acc[c.department] || 0) + 1;
+        return acc;
+    }, {});
+
+    const departments = Object.entries(deptStats).sort((a: any, b: any) => b[1] - a[1]).slice(0, 5);
+    const maxDeptCount = Math.max(...Object.values(deptStats) as number[], 1);
+
+    return (
+        <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {/* Header section with live pulse */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 mb-4">
+                        <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+                        <span className="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em]">Live Operation Center</span>
+                    </div>
+                    <h1 className="text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tight leading-none">
+                        {language === 'hi' ? 'लाइव नागरिक हब' : 'Live Civic Monitor'}
+                    </h1>
+                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-2">
+                        Real-time visualization of city infrastructure and social grievances.
+                    </p>
+                </div>
+                
+                <div className="flex gap-4">
+                    <div className="glass-card px-6 py-4 rounded-3xl border border-slate-100 dark:border-slate-800 text-center min-w-[120px]">
+                        <p className="text-2xl font-black text-blue-600">{activeComplaints.length}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Active</p>
+                    </div>
+                    <div className="glass-card px-6 py-4 rounded-3xl border border-slate-100 dark:border-slate-800 text-center min-w-[120px]">
+                        <p className="text-2xl font-black text-emerald-500">{resolvedComplaints.length}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Resolved</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Full Width Map Container */}
+                <div className="lg:col-span-8 space-y-6">
+                    <div className="h-[600px] rounded-[3rem] overflow-hidden border border-slate-100 dark:border-slate-800 shadow-2xl relative group">
+                        <div className="absolute inset-0 bg-slate-900 animate-pulse flex items-center justify-center -z-10">
+                            <Activity className="text-white/10" size={80} />
+                        </div>
+                        <div className="relative group h-full">
+                          {isSearchingLocation && (
+                            <div className="absolute inset-0 z-[2000] bg-black/20 backdrop-blur-[2px] flex items-center justify-center">
+                              <div className="flex flex-col items-center gap-2">
+                                <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                                <span className="text-[10px] font-black uppercase text-white tracking-widest">Searching...</span>
+                              </div>
+                            </div>
+                          )}
+                          <LiveMap complaints={complaints} language={language} theme={theme} center={globalPosition} />
+                        </div>
+                        
+                        {/* Map Overlay Stats */}
+                        <div className="absolute bottom-8 left-8 right-8 z-[1000] hidden md:flex gap-4">
+                            <div className="bg-white/80 dark:bg-slate-900/90 backdrop-blur-xl p-4 rounded-[2rem] border border-white/20 shadow-2xl flex-1 flex items-center gap-4">
+                                <div className="h-10 w-10 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+                                    <AlertTriangle size={20} />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Urgent Attention</p>
+                                    <p className="text-sm font-bold dark:text-white truncate">Critical power outage reported in Sector 12</p>
+                                </div>
+                            </div>
+                            <div className="bg-white/80 dark:bg-slate-900/90 backdrop-blur-xl p-4 rounded-[2rem] border border-white/20 shadow-2xl flex-1 flex items-center gap-4">
+                                <div className="h-10 w-10 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+                                    <Sparkles size={20} />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recent Success</p>
+                                    <p className="text-sm font-bold dark:text-white truncate">Road repair completed at MG Road Junction</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Department Performance Bar Chart (Custom) */}
+                    <div className="glass-card rounded-[3rem] p-10 border border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center justify-between mb-10">
+                            <div>
+                                <h3 className="text-lg font-bold dark:text-white">Departmental Load</h3>
+                                <p className="text-[11px] font-medium text-slate-500">Distribution of complaints across city departments.</p>
+                            </div>
+                            <BarChart3 className="text-blue-500/30" size={32} />
+                        </div>
+                        
+                        <div className="space-y-8">
+                            {departments.length > 0 ? departments.map(([name, count]: any, idx) => (
+                                <div key={name} className="space-y-2">
+                                    <div className="flex justify-between items-end">
+                                        <span className="text-xs font-black dark:text-white uppercase tracking-wider">{name}</span>
+                                        <span className="text-xs font-black text-blue-500">{count} Cases</span>
+                                    </div>
+                                    <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                        <motion.div 
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${(count / maxDeptCount) * 100}%` }}
+                                            transition={{ duration: 1, delay: idx * 0.1 }}
+                                            className="h-full bg-gradient-to-r from-blue-600 to-indigo-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                                        />
+                                    </div>
+                                </div>
+                            )) : (
+                                <div className="py-10 text-center text-slate-500 italic text-sm">No data available to visualize.</div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Sidebar Column */}
+                <div className="lg:col-span-4 space-y-8">
+                    {/* Live Pulse Feed */}
+                    <div className="glass-card rounded-[3rem] p-8 border border-slate-100 dark:border-slate-800 flex flex-col h-full min-h-[600px]">
+                        <div className="flex items-center gap-3 mb-8">
+                            <div className="h-8 w-8 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
+                                <Activity size={18} />
+                            </div>
+                            <h3 className="text-sm font-black uppercase tracking-widest dark:text-white">Live Pulse Feed</h3>
+                        </div>
+
+                        <div className="flex-1 space-y-6 overflow-y-auto pr-2 custom-scrollbar">
+                            {complaints.length > 0 ? complaints.slice(0, 10).map((c, i) => (
+                                <motion.div 
+                                    key={c.id}
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: i * 0.05 }}
+                                    className="p-4 rounded-2xl bg-slate-50/50 dark:bg-white/5 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-all cursor-pointer group"
+                                    onClick={() => {
+                                        // Navigate to complaint details
+                                        setView('complaint-details');
+                                    }}
+                                >
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-[8px] font-black text-blue-500 uppercase tracking-widest">{c.department}</span>
+                                        <span className="text-[8px] font-bold text-slate-400">{c.submittedAt.split('•')[1] || 'Just now'}</span>
+                                    </div>
+                                    <h4 className="text-xs font-bold dark:text-white group-hover:text-blue-500 transition-colors line-clamp-1">{c.subject}</h4>
+                                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">{c.description}</p>
+                                    
+                                    <div className="mt-3 flex items-center gap-3">
+                                        <div className={`h-1.5 w-1.5 rounded-full ${
+                                            c.status === 'Resolved' ? 'bg-emerald-500' : 'bg-amber-500'
+                                        }`} />
+                                        <span className="text-[9px] font-black uppercase tracking-tighter text-slate-500">{c.status}</span>
+                                    </div>
+                                </motion.div>
+                            )) : (
+                                <div className="h-full flex flex-col items-center justify-center text-center opacity-30 italic py-20">
+                                    <Search size={40} className="mb-4" />
+                                    <p className="text-sm">Listening for incoming civic reports...</p>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800">
+                             <button 
+                                onClick={() => setView('my-complaints')}
+                                className="w-full py-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
+                            >
+                                View Detailed History
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Operational Health Card */}
+                    <div className="glass-card rounded-[3rem] p-8 border border-slate-100 dark:border-slate-800 bg-gradient-to-br from-blue-600 to-indigo-700 text-white relative overflow-hidden shadow-xl shadow-blue-500/20">
+                        <Activity className="absolute -right-10 -bottom-10 opacity-10" size={200} />
+                        <div className="relative z-10">
+                            <h3 className="text-lg font-black uppercase tracking-tighter mb-2">City Health Score</h3>
+                            <div className="text-5xl font-black mb-4">94.2<span className="text-xl opacity-50 ml-1">%</span></div>
+                            <p className="text-xs text-blue-100/80 leading-relaxed font-medium">
+                                Current operational efficiency is performing above monthly target. System latency is at 12ms.
+                            </p>
+                            <div className="mt-6 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 border border-white/10 w-fit">
+                                <ShieldCheck size={14} />
+                                <span className="text-[10px] font-bold uppercase tracking-widest">All Systems Normal</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const ImpactAnalytics = ({ language, complaints }: { language: Language, complaints: Complaint[] }) => {
   const resolvedCount = complaints.filter(c => c.status === 'Resolved').length;
   const activeDepts = new Set(complaints.map(c => c.department)).size;
@@ -2000,7 +2317,14 @@ const Dashboard = ({
     onComplaintSubmit, 
     onViewDetails,
     setView,
-    complaints
+    complaints,
+    theme,
+    globalSearch,
+    globalPosition,
+    setGlobalPosition,
+    globalAddress,
+    setGlobalAddress,
+    isSearchingLocation
 }: { 
     language: Language, 
     user: User, 
@@ -2008,7 +2332,14 @@ const Dashboard = ({
     onComplaintSubmit: (c: Complaint) => void,
     onViewDetails: (id: string) => void,
     setView: (v: View) => void,
-    complaints: Complaint[]
+    complaints: Complaint[],
+    theme: Theme,
+    globalSearch?: string,
+    globalPosition: [number, number],
+    setGlobalPosition: (p: [number, number]) => void,
+    globalAddress: string,
+    setGlobalAddress: (a: string) => void,
+    isSearchingLocation: boolean
 }) => {
     const [isEmergencyOpen, setIsEmergencyOpen] = useState(false);
     const [isOfficesOpen, setIsOfficesOpen] = useState(false);
@@ -2017,10 +2348,12 @@ const Dashboard = ({
     const [problem, setProblem] = useState('');
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [pincode, setPincode] = useState('');
-    const [address, setAddress] = useState('');
+    const address = globalAddress;
+    const setAddress = setGlobalAddress;
     const [locationStatus, setLocationStatus] = useState<'idle' | 'detecting' | 'detected' | 'error'>('idle');
     const [showMap, setShowMap] = useState(false);
-    const [position, setPosition] = useState<[number, number]>([28.6139, 77.2090]); // Default Delhi
+    const position = globalPosition;
+    const setPosition = setGlobalPosition;
 
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -2029,6 +2362,13 @@ const Dashboard = ({
     useEffect(() => {
         detectLocation();
     }, []);
+
+    // Sync global search with address field for integrated experience
+    useEffect(() => {
+        if (globalSearch !== undefined) {
+            setAddress(globalSearch);
+        }
+    }, [globalSearch]);
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -2167,7 +2507,7 @@ const Dashboard = ({
             <motion.div 
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="relative overflow-hidden rounded-[1.5rem] bg-[#0d0f1a] border border-white/5 p-6 text-white shadow-2xl min-h-[160px] flex items-center"
+                className="relative overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-blue-700 to-blue-900 dark:from-[#0d0f1a] dark:to-[#1a1c2e] border border-white/5 p-6 text-white shadow-2xl min-h-[160px] flex items-center"
             >
                 <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 w-full">
                     <div className="space-y-2">
@@ -2318,7 +2658,7 @@ const Dashboard = ({
                                 exit={{ opacity: 0, height: 0 }}
                                 className="mt-4 overflow-hidden"
                             >
-                                <LocationPicker position={position} setPosition={setPosition} setAddress={setAddress} />
+                                <LocationPicker position={position} setPosition={setPosition} setAddress={setAddress} theme={theme} />
                             </motion.div>
                           )}
                         </AnimatePresence>
@@ -2362,6 +2702,12 @@ const Dashboard = ({
                                  </div>
                               </div>
                               <div className="flex items-center gap-4">
+                                 <button 
+                                    onClick={() => setView('monitoring')}
+                                    className="px-4 py-2 rounded-xl bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all border border-primary/20"
+                                 >
+                                    View Full Monitor
+                                 </button>
                                  <div className="flex items-center gap-2">
                                     <div className="h-2 w-2 rounded-full bg-glow-blue" />
                                     <span className="text-[8px] font-black uppercase text-gray-500">Active</span>
@@ -2372,7 +2718,17 @@ const Dashboard = ({
                                  </div>
                               </div>
                            </div>
-                           <LiveMap complaints={complaints} language={language} center={position} />
+                           <div className="relative group">
+                             {isSearchingLocation && (
+                               <div className="absolute inset-0 z-[2000] bg-black/20 backdrop-blur-[2px] flex items-center justify-center rounded-[2.5rem]">
+                                 <div className="flex flex-col items-center gap-2">
+                                   <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                                   <span className="text-[10px] font-black uppercase text-white tracking-widest">Searching...</span>
+                                 </div>
+                               </div>
+                             )}
+                             <LiveMap complaints={complaints} language={language} theme={theme} center={position} />
+                           </div>
                         </div>
 
                         <ImpactAnalytics language={language} complaints={complaints} />
@@ -3163,7 +3519,7 @@ const AnimalTodayImpact = ({ complaints }: { complaints: Complaint[] }) => {
   );
 };
 
-const AnimalWelfarePage = ({ language, complaints, onComplaintSubmit, onViewDetails, setView }: { language: Language, complaints: Complaint[], onComplaintSubmit: (c: Complaint) => void, onViewDetails: (id: string) => void, setView: (v: View) => void }) => {
+const AnimalWelfarePage = ({ language, complaints, onComplaintSubmit, onViewDetails, setView, theme }: { language: Language, complaints: Complaint[], onComplaintSubmit: (c: Complaint) => void, onViewDetails: (id: string) => void, setView: (v: View) => void, theme: Theme }) => {
     const [problem, setProblem] = useState('');
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -3386,6 +3742,7 @@ const AnimalWelfarePage = ({ language, complaints, onComplaintSubmit, onViewDeta
                                   position={position} 
                                   setPosition={setPosition} 
                                   setAddress={setAddress} 
+                                  theme={theme}
                                 />
                               </div>
                             )}
@@ -3415,7 +3772,7 @@ const AnimalWelfarePage = ({ language, complaints, onComplaintSubmit, onViewDeta
                         <MapPin size={14} className="text-glow-green" />
                         <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Live Rescue Hotspots</h3>
                       </div>
-                      <LiveMap complaints={complaints.filter(c => c.department === 'Animal Welfare')} language={language} center={position || [28.6139, 77.2090]} />
+                      <LiveMap complaints={complaints.filter(c => c.department === 'Animal Welfare')} language={language} theme={theme} center={position || [28.6139, 77.2090]} />
                    </div>
 
                    {/* Save a Life Landscape Card */}
@@ -3664,7 +4021,7 @@ const SocialHelpAIAssessment = ({ result, onViewDetails }: { result: Complaint |
   );
 };
 
-const SocialHelpPage = ({ language, complaints, onComplaintSubmit, onViewDetails, setView }: { language: Language, complaints: Complaint[], onComplaintSubmit: (c: Complaint) => void, onViewDetails: (id: string) => void, setView: (v: View) => void }) => {
+const SocialHelpPage = ({ language, complaints, onComplaintSubmit, onViewDetails, setView, theme }: { language: Language, complaints: Complaint[], onComplaintSubmit: (c: Complaint) => void, onViewDetails: (id: string) => void, setView: (v: View) => void, theme: Theme }) => {
     const [problem, setProblem] = useState('');
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -3884,6 +4241,7 @@ const SocialHelpPage = ({ language, complaints, onComplaintSubmit, onViewDetails
                                  position={position} 
                                  setPosition={setPosition} 
                                  setAddress={setAddress} 
+                                 theme={theme}
                                />
                              </div>
                            )}
@@ -3912,7 +4270,7 @@ const SocialHelpPage = ({ language, complaints, onComplaintSubmit, onViewDetails
                         <MapPin size={14} className="text-pink-500/60" />
                         <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Live Support Map</h3>
                       </div>
-                      <LiveMap complaints={complaints.filter(c => c.department === 'Social Help')} language={language} center={position || [28.6139, 77.2090]} />
+                      <LiveMap complaints={complaints.filter(c => c.department === 'Social Help')} language={language} theme={theme} center={position || [28.6139, 77.2090]} />
                    </div>
 
                    {/* Save a Life CTA */}
@@ -5000,14 +5358,14 @@ const NotificationToast = ({ notification, onClose }: { notification: any, onClo
       initial={{ opacity: 0, x: 100, scale: 0.9 }}
       animate={{ opacity: 1, x: 0, scale: 1 }}
       exit={{ opacity: 0, x: 100, scale: 0.9 }}
-      className="fixed bottom-6 right-6 z-[9999] w-80 bg-[#1e213a] border border-glow-blue/30 rounded-2xl p-4 shadow-2xl shadow-blue-500/20 flex gap-4 items-start"
+      className="fixed bottom-6 right-6 z-[9999] w-80 bg-white dark:bg-[#1e213a] border border-blue-500/10 dark:border-glow-blue/30 rounded-2xl p-4 shadow-2xl shadow-blue-500/10 dark:shadow-blue-500/20 flex gap-4 items-start backdrop-blur-md"
     >
       <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 shrink-0 border border-blue-500/20">
         <Bell size={20} />
       </div>
       <div className="flex-1 min-w-0">
-        <h4 className="text-sm font-bold text-white truncate">{notification.title}</h4>
-        <p className="text-xs text-gray-400 mt-1 line-clamp-2">{notification.body}</p>
+        <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">{notification.title}</h4>
+        <p className="text-xs text-slate-500 dark:text-gray-400 mt-1 line-clamp-2">{notification.body}</p>
       </div>
       <button onClick={onClose} className="p-1 hover:bg-white/5 rounded-md text-gray-500 hover:text-white transition-colors">
         <X size={16} />
@@ -5018,6 +5376,7 @@ const NotificationToast = ({ notification, onClose }: { notification: any, onClo
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [language, setLanguage] = useState<Language>('en');
   const [theme, setTheme] = useState<Theme>(() => {
     try {
@@ -5035,6 +5394,12 @@ export default function App() {
   const [selectedComplaintId, setSelectedComplaintId] = useState<string | null>(null);
   const [fcmToken, setFcmToken] = useState<string | null>(null);
   const [notification, setNotification] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Global Location State for Unified Map Search
+  const [globalAddress, setGlobalAddress] = useState('');
+  const [globalPosition, setGlobalPosition] = useState<[number, number]>([28.6139, 77.2090]); // Default Delhi
+  const [isSearchingLocation, setIsSearchingLocation] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -5056,6 +5421,28 @@ export default function App() {
   // Extract current view from pathname
   const currentView = (location.pathname.substring(1) || (user ? 'dashboard' : 'landing')) as View;
   const view = currentView; // Overwrite the local state usage with the URL-derived one
+
+  const handleGlobalSearch = async (query: string) => {
+    if (!query) return;
+    setIsSearchingLocation(true);
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`);
+      const data = await response.json();
+      if (data && data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+        setGlobalPosition([lat, lon]);
+        setGlobalAddress(data[0].display_name);
+        if (view !== 'dashboard' && view !== 'monitoring') {
+          setView('dashboard');
+        }
+      }
+    } catch (e) {
+      console.error('Global search failed:', e);
+    } finally {
+      setIsSearchingLocation(false);
+    }
+  };
 
   useEffect(() => {
     // Setup FCM listener
@@ -5350,6 +5737,7 @@ export default function App() {
   const isDashboardView = [
     'dashboard', 
     'profile',
+    'monitoring',
     'animal-welfare', 
     'social-help', 
     'government-schemes', 
@@ -5396,6 +5784,10 @@ export default function App() {
           setLanguage={setLanguage}
           theme={theme}
           setTheme={setTheme}
+          onMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          handleGlobalSearch={handleGlobalSearch}
         />
       ) : (
         <PublicNavbar 
@@ -5412,6 +5804,54 @@ export default function App() {
       
       <div className={`flex-1 flex w-full relative`}>
         {isDashboardView && <Sidebar currentView={view} setView={setView} onLogout={handleLogout} language={language} />}
+        
+        {/* Mobile Sidebar Overlay */}
+        <AnimatePresence>
+          {isMobileMenuOpen && isDashboardView && (
+            <>
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] lg:hidden"
+              />
+              <motion.div 
+                initial={{ x: '-100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '-100%' }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className="fixed inset-y-0 left-0 w-80 bg-white dark:bg-slate-900 z-[70] lg:hidden border-r border-gray-100 dark:border-white/10 shadow-2xl"
+              >
+                <div className="flex flex-col h-full">
+                  <div className="h-20 border-b border-gray-100 dark:border-white/10 flex items-center px-6 justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg">
+                        <LayoutDashboard size={22} />
+                      </div>
+                      <span className="text-xl font-bold dark:text-white">CitizenConnect</span>
+                    </div>
+                    <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg text-gray-500">
+                      <X size={24} />
+                    </button>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-4">
+                    <SidebarContent currentView={view} setView={(v) => { setView(v); setIsMobileMenuOpen(false); }} language={language} />
+                  </div>
+                  <div className="p-4 border-t border-gray-100 dark:border-white/10">
+                    <button
+                      onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}
+                      className="flex w-full items-center gap-4 rounded-xl px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all"
+                    >
+                      <LogOut size={20} />
+                      <span>{language === 'hi' ? 'लॉगआउट' : 'Logout'}</span>
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
         
         <main className={`flex-1 w-full min-w-0 py-10 transition-all duration-300`}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -5440,6 +5880,13 @@ export default function App() {
                       }}
                       setView={setView}
                       complaints={complaints}
+                      theme={theme}
+                      globalSearch={view === 'dashboard' ? searchQuery : undefined}
+                      globalPosition={globalPosition}
+                      setGlobalPosition={setGlobalPosition}
+                      globalAddress={globalAddress}
+                      setGlobalAddress={setGlobalAddress}
+                      isSearchingLocation={isSearchingLocation}
                     />
                   </PageWrapper>
                 ) : <Navigate to="/login" replace />} />
@@ -5467,6 +5914,19 @@ export default function App() {
                 <Route path="/government-schemes" element={<PageWrapper><GovSchemesPage language={language} schemes={schemes} /></PageWrapper>} />
                 <Route path="/government-donations" element={<PageWrapper><GovDonationsPage language={language} donations={donations} /></PageWrapper>} />
                 
+                <Route path="/monitoring" element={
+                  <PageWrapper>
+                    <LiveCivicMonitoringPage 
+                      complaints={complaints} 
+                      language={language} 
+                      theme={theme} 
+                      setView={setView} 
+                      globalPosition={globalPosition}
+                      isSearchingLocation={isSearchingLocation}
+                    />
+                  </PageWrapper>
+                } />
+                
                 <Route path="/animal-welfare" element={
                   <PageWrapper>
                     <AnimalWelfarePage 
@@ -5478,6 +5938,7 @@ export default function App() {
                         setView('complaint-details');
                       }}
                       setView={setView}
+                      theme={theme}
                     />
                   </PageWrapper>
                 } />
@@ -5493,6 +5954,7 @@ export default function App() {
                         setView('complaint-details');
                       }}
                       setView={setView}
+                      theme={theme}
                     />
                   </PageWrapper>
                 } />
