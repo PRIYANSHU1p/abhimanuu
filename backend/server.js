@@ -47,6 +47,50 @@ app.use('/api/donations', donationRoutes);
 app.use('/api/initiatives', initiativeRoutes);
 
 
+// Seed Initiatives Route
+app.get('/api/seed-initiatives', async (req, res) => {
+    try {
+        const Initiative = require('./models/Initiative');
+        const count = await Initiative.countDocuments();
+        if (count > 0) return res.send('Initiatives already seeded');
+
+        const samples = [
+            {
+                title: "Sector 15 Cleanliness Drive",
+                description: "Join us for a weekend drive to clean up the local parks and residential areas. Gloves and bags will be provided.",
+                category: "Cleanliness",
+                volunteersRequired: 50,
+                volunteersJoined: 12,
+                images: ["https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?q=80&w=2670&auto=format&fit=crop"],
+                location: { lat: 28.4595, lng: 77.0266 }
+            },
+            {
+                title: "Community Tree Plantation",
+                description: "Let's make our city greener! We are planting 500 saplings across the north zone. Bring your own shovel!",
+                category: "Greenery",
+                volunteersRequired: 100,
+                volunteersJoined: 45,
+                images: ["https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2626&auto=format&fit=crop"],
+                location: { lat: 28.6139, lng: 77.2090 }
+            },
+            {
+                title: "Safety Awareness Workshop",
+                description: "A workshop on emergency response and basic first aid for school children and parents.",
+                category: "Safety",
+                volunteersRequired: 20,
+                volunteersJoined: 8,
+                images: ["https://images.unsplash.com/photo-1582213726868-39c9efeb2475?q=80&w=2670&auto=format&fit=crop"],
+                location: { lat: 28.5355, lng: 77.3910 }
+            }
+        ];
+
+        await Initiative.insertMany(samples);
+        res.status(201).json({ message: 'Initiatives seeded successfully', data: samples });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // Test Route
 app.get('/', (req, res) => {
     res.send('CitizenConnect Backend Running');

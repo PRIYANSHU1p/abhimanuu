@@ -4338,7 +4338,7 @@ const SocialHelpPage = ({ language, complaints, onComplaintSubmit, onViewDetails
     );
 };
 
-const InitiativesPage = ({ language, initiatives }: { language: Language, initiatives: Initiative[] }) => {
+const InitiativesPage = ({ language, initiatives, onRefresh }: { language: Language, initiatives: Initiative[], onRefresh: () => void }) => {
     const [joining, setJoining] = useState<string | null>(null);
     const t = (en: string, hi: string) => language === 'hi' ? hi : en;
 
@@ -4347,8 +4347,7 @@ const InitiativesPage = ({ language, initiatives }: { language: Language, initia
         try {
             const response = await fetch(`/api/initiatives/${id}/join`, { method: 'PATCH' });
             if (response.ok) {
-                // Success - the parent will refetch or we can just update local state if we had it
-                // For now just wait a bit for effect
+                onRefresh();
                 setTimeout(() => setJoining(null), 1000);
             }
         } catch (e) {
@@ -4358,9 +4357,9 @@ const InitiativesPage = ({ language, initiatives }: { language: Language, initia
 
     return (
         <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4">
-            <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-indigo-600 to-violet-800 p-10 text-white shadow-2xl">
+            <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-indigo-600 via-violet-700 to-fuchsia-800 p-10 text-white shadow-2xl">
                 <div className="relative z-10 space-y-4 max-w-2xl">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-indigo-200 text-[10px] font-black uppercase tracking-widest">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-indigo-200 text-[10px] font-black uppercase tracking-widest backdrop-blur-md">
                         <Users size={12} /> {t('Community Power', 'सामुदायिक शक्ति')}
                     </div>
                     <h1 className="text-4xl font-black tracking-tight leading-tight">
@@ -4371,63 +4370,81 @@ const InitiativesPage = ({ language, initiatives }: { language: Language, initia
                     </p>
                 </div>
                 <Sparkles size={180} className="absolute -right-10 -bottom-10 opacity-10 rotate-12" />
+                <div className="absolute top-0 right-0 h-full w-1/3 bg-white/5 skew-x-12 translate-x-20" />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {initiatives.map((item) => (
-                    <motion.div 
-                        key={item._id}
-                        whileHover={{ y: -5 }}
-                        className="glass-card rounded-[2rem] overflow-hidden border border-gray-100 dark:border-white/5 shadow-xl flex flex-col h-full bg-white dark:bg-[#060B16] transition-colors"
-                    >
-                        <div className="relative h-48">
-                            <img src={item.images[0]} alt={item.title} className="h-full w-full object-cover" />
-                            <div className="absolute top-4 left-4 bg-white/90 dark:bg-black/80 backdrop-blur-md px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest text-primary">
-                                {item.category}
-                            </div>
-                        </div>
-                        <div className="p-6 flex-1 flex flex-col">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{item.title}</h3>
-                            <p className="text-xs text-slate-500 dark:text-gray-400 mb-6 line-clamp-3 leading-relaxed">{item.description}</p>
-                            
-                            <div className="mt-auto space-y-4">
-                                <div className="space-y-2">
-                                    <div className="flex justify-between text-[10px] font-black uppercase tracking-tighter">
-                                        <span className="text-slate-400">{t('Progress', 'प्रगति')}</span>
-                                        <span className="text-primary">{Math.round((item.volunteersJoined / item.volunteersRequired) * 100)}%</span>
-                                    </div>
-                                    <div className="h-2 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
-                                        <motion.div 
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${(item.volunteersJoined / item.volunteersRequired) * 100}%` }}
-                                            className="h-full bg-primary"
-                                        />
-                                    </div>
-                                    <div className="flex justify-between text-[9px] font-bold text-slate-500 dark:text-gray-500">
-                                        <span>{item.volunteersJoined} {t('Joined', 'शामिल हुए')}</span>
-                                        <span>{item.volunteersRequired} {t('Needed', 'आवश्यक')}</span>
-                                    </div>
+                {initiatives.map((item) => {
+                    const progress = item.volunteersRequired > 0 
+                        ? Math.min(100, Math.round((item.volunteersJoined / item.volunteersRequired) * 100)) 
+                        : 0;
+                    
+                    return (
+                        <motion.div 
+                            key={item._id}
+                            whileHover={{ y: -8, scale: 1.02 }}
+                            className="group rounded-[2.5rem] overflow-hidden border border-gray-100 dark:border-white/5 shadow-xl flex flex-col h-full bg-white dark:bg-[#060B16] transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10"
+                        >
+                            <div className="relative h-56 overflow-hidden">
+                                <img 
+                                    src={item.images[0] || "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?q=80&w=2670&auto=format&fit=crop"} 
+                                    alt={item.title} 
+                                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <div className="absolute top-4 left-4 bg-white/90 dark:bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest text-primary border border-primary/20">
+                                    {item.category}
                                 </div>
-
-                                <button 
-                                    onClick={() => handleJoin(item._id)}
-                                    disabled={joining === item._id}
-                                    className={`w-full py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
-                                        joining === item._id 
-                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                                        : 'bg-primary text-white hover:bg-blue-700 shadow-lg shadow-primary/20'
-                                    }`}
-                                >
-                                    {joining === item._id ? (
-                                        <div className="h-4 w-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
-                                    ) : (
-                                        <><Users size={14} /> {t('Join Initiative', 'पहल में शामिल हों')}</>
-                                    )}
-                                </button>
+                                <div className="absolute bottom-4 right-4 h-10 w-10 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                                    <MapPin size={18} />
+                                </div>
                             </div>
-                        </div>
-                    </motion.div>
-                ))}
+                            <div className="p-8 flex-1 flex flex-col">
+                                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-primary transition-colors">{item.title}</h3>
+                                <p className="text-xs text-slate-500 dark:text-gray-400 mb-8 line-clamp-3 leading-relaxed font-medium">{item.description}</p>
+                                
+                                <div className="mt-auto space-y-6">
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between items-end">
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t('Volunteer Stats', 'स्वयंसेवक आँकड़े')}</span>
+                                                <span className="text-lg font-black dark:text-white">{item.volunteersJoined} <span className="text-xs text-slate-400 font-bold">/ {item.volunteersRequired}</span></span>
+                                            </div>
+                                            <span className="text-sm font-black text-primary">{progress}%</span>
+                                        </div>
+                                        <div className="h-2.5 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden p-0.5">
+                                            <motion.div 
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${progress}%` }}
+                                                className={`h-full rounded-full ${progress === 100 ? 'bg-emerald-500' : 'bg-primary'} shadow-[0_0_10px_rgba(59,130,246,0.5)]`}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <button 
+                                        onClick={() => handleJoin(item._id)}
+                                        disabled={joining === item._id || progress >= 100}
+                                        className={`w-full py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${
+                                            joining === item._id 
+                                            ? 'bg-gray-100 dark:bg-white/5 text-gray-400 cursor-not-allowed' 
+                                            : progress >= 100
+                                            ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 cursor-not-allowed'
+                                            : 'bg-primary text-white hover:bg-blue-700 shadow-xl shadow-primary/20 active:scale-[0.98]'
+                                        }`}
+                                    >
+                                        {joining === item._id ? (
+                                            <div className="h-4 w-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+                                        ) : progress >= 100 ? (
+                                            <><Check size={14} /> {t('Initiative Full', 'पहल पूर्ण')}</>
+                                        ) : (
+                                            <><Users size={14} /> {t('Join Initiative', 'पहल में शामिल हों')}</>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    );
+                })}
             </div>
         </div>
     );
@@ -6043,7 +6060,7 @@ export default function App() {
 
                 <Route path="/government-schemes" element={<PageWrapper><GovSchemesPage language={language} schemes={schemes} /></PageWrapper>} />
                 <Route path="/government-donations" element={<PageWrapper><GovDonationsPage language={language} donations={donations} /></PageWrapper>} />
-                <Route path="/initiatives" element={<PageWrapper><InitiativesPage language={language} initiatives={initiatives} /></PageWrapper>} />
+                <Route path="/initiatives" element={<PageWrapper><InitiativesPage language={language} initiatives={initiatives} onRefresh={fetchInitiatives} /></PageWrapper>} />
                 
                 <Route path="/monitoring" element={
                   <PageWrapper>
