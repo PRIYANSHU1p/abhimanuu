@@ -158,7 +158,8 @@ type View =
   | 'monitoring'
   | 'forgot-password'
   | 'reset-password'
-  | 'about';
+  | 'about'
+  | 'initiatives';
 
 interface NotificationMessage {
   id: string;
@@ -245,6 +246,18 @@ interface Donation {
   category: string;
   isVerified: boolean;
   status?: string;
+}
+
+interface Initiative {
+  _id: string;
+  title: string;
+  description: string;
+  category: string;
+  location: { lat: number; lng: number; address: string };
+  volunteersRequired: number;
+  volunteersJoined: number;
+  images: string[];
+  status: string;
 }
 
 // --- Mock Data ---
@@ -750,6 +763,12 @@ const PublicNavbar = ({
             {t('home')}
           </button>
           <button 
+            onClick={() => setView('initiatives')} 
+            className={`text-sm font-bold transition-all hover:text-primary ${currentView === 'initiatives' ? 'text-primary' : 'text-gray-600 dark:text-gray-400'}`}
+          >
+            {language === 'hi' ? 'सामुदायिक पहल' : 'Initiatives'}
+          </button>
+          <button 
             onClick={() => setView('about')} 
             className={`text-sm font-bold transition-all hover:text-primary ${currentView === 'about' ? 'text-primary' : 'text-gray-600 dark:text-gray-400'}`}
           >
@@ -1007,6 +1026,7 @@ const SidebarContent = ({ currentView, setView, language }: { currentView: View,
   const items = [
     { id: 'dashboard', label: language === 'hi' ? 'डैशबोर्ड' : 'Dashboard', icon: Home },
     { id: 'monitoring', label: language === 'hi' ? 'लाइव मॉनिटरिंग' : 'Live Monitoring', icon: Activity },
+    { id: 'initiatives', label: language === 'hi' ? 'सामुदायिक पहल' : 'Community Initiatives', icon: Sparkles },
     { id: 'my-complaints', label: language === 'hi' ? 'मेरी शिकायतें' : 'My Complaints', icon: FileText },
     { id: 'animal-welfare', label: language === 'hi' ? 'पशु कल्याण' : 'Animal Welfare', icon: PawPrint },
     { id: 'social-help', label: language === 'hi' ? 'सामाजिक सहायता' : 'Social Help', icon: HeartHandshake },
@@ -2267,7 +2287,7 @@ const LiveCivicMonitoringPage = ({ complaints, language, theme, setView, globalP
 const ImpactAnalytics = ({ language, complaints }: { language: Language, complaints: Complaint[] }) => {
   const resolvedCount = complaints.filter(c => c.status === 'Resolved').length;
   const activeDepts = new Set(complaints.map(c => c.department)).size;
-  const citizenRating = complaints.length > 0 ? (4.2 + (resolvedCount * 0.1)).toFixed(1) : '4.5';
+  const citizenRating = complaints.length > 0 ? Math.min(5.0, 4.2 + (resolvedCount * 0.01)).toFixed(1) : '4.8';
 
   const stats = [
     { label: 'Issues Reported', value: complaints.length, icon: BarChart3, color: 'text-glow-blue', glow: 'glow-icon-blue' },
@@ -4318,6 +4338,101 @@ const SocialHelpPage = ({ language, complaints, onComplaintSubmit, onViewDetails
     );
 };
 
+const InitiativesPage = ({ language, initiatives }: { language: Language, initiatives: Initiative[] }) => {
+    const [joining, setJoining] = useState<string | null>(null);
+    const t = (en: string, hi: string) => language === 'hi' ? hi : en;
+
+    const handleJoin = async (id: string) => {
+        setJoining(id);
+        try {
+            const response = await fetch(`/api/initiatives/${id}/join`, { method: 'PATCH' });
+            if (response.ok) {
+                // Success - the parent will refetch or we can just update local state if we had it
+                // For now just wait a bit for effect
+                setTimeout(() => setJoining(null), 1000);
+            }
+        } catch (e) {
+            setJoining(null);
+        }
+    };
+
+    return (
+        <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4">
+            <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-indigo-600 to-violet-800 p-10 text-white shadow-2xl">
+                <div className="relative z-10 space-y-4 max-w-2xl">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-indigo-200 text-[10px] font-black uppercase tracking-widest">
+                        <Users size={12} /> {t('Community Power', 'सामुदायिक शक्ति')}
+                    </div>
+                    <h1 className="text-4xl font-black tracking-tight leading-tight">
+                        {t('Shape Your City, Together.', 'अपने शहर को साथ मिलकर संवारें।')}
+                    </h1>
+                    <p className="text-indigo-100 text-sm font-medium leading-relaxed">
+                        {t('CitizenConnect initiatives are community-driven projects aimed at making our urban spaces greener, cleaner, and safer. Join hands with fellow citizens to drive real change.', 'सिटिजनकनेक्ट पहल सामुदायिक नेतृत्व वाली परियोजनाएं हैं जिनका उद्देश्य हमारे शहरी क्षेत्रों को हरा-भरा, स्वच्छ और सुरक्षित बनाना है। वास्तविक बदलाव लाने के लिए साथी नागरिकों के साथ हाथ मिलाएं।')}
+                    </p>
+                </div>
+                <Sparkles size={180} className="absolute -right-10 -bottom-10 opacity-10 rotate-12" />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {initiatives.map((item) => (
+                    <motion.div 
+                        key={item._id}
+                        whileHover={{ y: -5 }}
+                        className="glass-card rounded-[2rem] overflow-hidden border border-gray-100 dark:border-white/5 shadow-xl flex flex-col h-full bg-white dark:bg-[#060B16] transition-colors"
+                    >
+                        <div className="relative h-48">
+                            <img src={item.images[0]} alt={item.title} className="h-full w-full object-cover" />
+                            <div className="absolute top-4 left-4 bg-white/90 dark:bg-black/80 backdrop-blur-md px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest text-primary">
+                                {item.category}
+                            </div>
+                        </div>
+                        <div className="p-6 flex-1 flex flex-col">
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{item.title}</h3>
+                            <p className="text-xs text-slate-500 dark:text-gray-400 mb-6 line-clamp-3 leading-relaxed">{item.description}</p>
+                            
+                            <div className="mt-auto space-y-4">
+                                <div className="space-y-2">
+                                    <div className="flex justify-between text-[10px] font-black uppercase tracking-tighter">
+                                        <span className="text-slate-400">{t('Progress', 'प्रगति')}</span>
+                                        <span className="text-primary">{Math.round((item.volunteersJoined / item.volunteersRequired) * 100)}%</span>
+                                    </div>
+                                    <div className="h-2 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
+                                        <motion.div 
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${(item.volunteersJoined / item.volunteersRequired) * 100}%` }}
+                                            className="h-full bg-primary"
+                                        />
+                                    </div>
+                                    <div className="flex justify-between text-[9px] font-bold text-slate-500 dark:text-gray-500">
+                                        <span>{item.volunteersJoined} {t('Joined', 'शामिल हुए')}</span>
+                                        <span>{item.volunteersRequired} {t('Needed', 'आवश्यक')}</span>
+                                    </div>
+                                </div>
+
+                                <button 
+                                    onClick={() => handleJoin(item._id)}
+                                    disabled={joining === item._id}
+                                    className={`w-full py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+                                        joining === item._id 
+                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                                        : 'bg-primary text-white hover:bg-blue-700 shadow-lg shadow-primary/20'
+                                    }`}
+                                >
+                                    {joining === item._id ? (
+                                        <div className="h-4 w-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+                                    ) : (
+                                        <><Users size={14} /> {t('Join Initiative', 'पहल में शामिल हों')}</>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
 interface ChatbotProps {
   language: Language;
 }
@@ -5388,6 +5503,7 @@ export default function App() {
   const [complaints, setComplaints] = useState<Complaint[]>([]); 
   const [schemes, setSchemes] = useState<Scheme[]>([]);
   const [donations, setDonations] = useState<Donation[]>([]);
+  const [initiatives, setInitiatives] = useState<Initiative[]>([]);
   const [activeComplaintId, setActiveComplaintId] = useState<string | null>(() => {
     return localStorage.getItem('citizenconnect_active_id');
   });
@@ -5615,6 +5731,18 @@ export default function App() {
     }
   };
 
+  const fetchInitiatives = async () => {
+    try {
+      const response = await fetch('/api/initiatives');
+      if (response.ok) {
+        const data = await response.json();
+        setInitiatives(Array.isArray(data) ? data : []);
+      }
+    } catch (error) {
+      console.error('Error fetching initiatives:', error);
+    }
+  };
+
   const hasCheckedAuth = useRef(false);
   useEffect(() => {
     // Only fetch data if we have a user
@@ -5623,6 +5751,7 @@ export default function App() {
         await fetchComplaints();
         await fetchSchemes();
         await fetchDonations();
+        await fetchInitiatives();
       };
       initialize();
 
@@ -5746,7 +5875,8 @@ export default function App() {
     'settings',
     'help-support',
     'my-complaints',
-    'complaint-details'
+    'complaint-details',
+    'initiatives'
   ].includes(view);
 
   const shouldShowDashboardNav = isDashboardView || (view === 'about' && user !== null);
@@ -5913,6 +6043,7 @@ export default function App() {
 
                 <Route path="/government-schemes" element={<PageWrapper><GovSchemesPage language={language} schemes={schemes} /></PageWrapper>} />
                 <Route path="/government-donations" element={<PageWrapper><GovDonationsPage language={language} donations={donations} /></PageWrapper>} />
+                <Route path="/initiatives" element={<PageWrapper><InitiativesPage language={language} initiatives={initiatives} /></PageWrapper>} />
                 
                 <Route path="/monitoring" element={
                   <PageWrapper>
