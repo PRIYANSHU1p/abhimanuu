@@ -64,7 +64,10 @@ import {
   Crosshair,
   Download,
   Key,
-  MessageCircle
+  MessageCircle,
+  Filter,
+  Inbox,
+  Zap
 } from 'lucide-react';
 import { CivicGallery } from './components/CivicGallery';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap, Tooltip } from 'react-leaflet';
@@ -414,6 +417,7 @@ const TRANSLATIONS = {
     social: "Social Help",
     schemes: "Govt Schemes",
     donations: "Donations",
+    initiatives: "Initiatives",
     hero_tag: "Empowering Citizens, Fixing Cities",
     hero_title: "Voice Your Concerns, See the Change.",
     hero_desc: "Connect directly with local authorities. Report issues, track progress, and stay informed about government schemes.",
@@ -499,6 +503,7 @@ const TRANSLATIONS = {
     social: "सामाजिक सहायता",
     schemes: "सरकारी योजनाएं",
     donations: "दान",
+    initiatives: "सामुदायिक पहल",
     hero_tag: "नागरिकों को सशक्त बनाना, शहरों को सुधारना",
     hero_title: "अपनी चिंता व्यक्त करें, बदलाव देखें।",
     hero_desc: "स्थानीय अधिकारियों से सीधे जुड़ें। मुद्दों की रिपोर्ट करें, प्रगति को ट्रैक करें और सरकारी योजनाओं के बारे में सूचित रहें।",
@@ -756,11 +761,12 @@ const PublicNavbar = ({
   currentView, 
   setView, 
   user, 
-  onLogout,
-  language,
-  setLanguage,
-  theme,
-  setTheme
+  onLogout, 
+  language, 
+  setLanguage, 
+  theme, 
+  setTheme, 
+  onMenuToggle 
 }: { 
   currentView: View, 
   setView: (v: View) => void, 
@@ -769,18 +775,27 @@ const PublicNavbar = ({
   language: Language,
   setLanguage: (l: Language) => void,
   theme: Theme,
-  setTheme: (t: Theme) => void
+  setTheme: (t: Theme) => void,
+  onMenuToggle: () => void
 }) => {
   const t = (key: keyof typeof TRANSLATIONS['en']) => TRANSLATIONS[language][key] || key;
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-gray-100 dark:border-white/5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md transition-colors duration-300">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setView('landing')}>
-          <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
-            <LayoutDashboard size={22} />
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={onMenuToggle}
+            className="md:hidden p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-colors text-gray-500 dark:text-gray-400"
+          >
+            <Menu size={24} />
+          </button>
+          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setView('landing')}>
+            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
+              <LayoutDashboard size={22} />
+            </div>
+            <span className="text-2xl font-black tracking-tighter text-primary">CitizenConnect</span>
           </div>
-          <span className="text-2xl font-black tracking-tighter text-primary">CitizenConnect</span>
         </div>
 
         <div className="hidden md:flex items-center gap-8">
@@ -794,7 +809,7 @@ const PublicNavbar = ({
             onClick={() => setView('initiatives')} 
             className={`text-sm font-bold transition-all hover:text-primary ${currentView === 'initiatives' ? 'text-primary' : 'text-gray-600 dark:text-gray-400'}`}
           >
-            {language === 'hi' ? 'सामुदायिक पहल' : 'Initiatives'}
+            {t('initiatives')}
           </button>
           <button 
             onClick={() => setView('about')} 
@@ -924,6 +939,15 @@ const DashboardNavbar = ({
             >
               {t('about')}
               {currentView === 'about' && (
+                <motion.div layoutId="nav-underline" className="absolute -bottom-1.5 left-0 right-0 h-[2px] bg-primary rounded-full" />
+              )}
+            </button>
+            <button 
+              onClick={() => setView('initiatives')} 
+              className={`relative py-1 text-sm font-bold transition-all ${currentView === 'initiatives' ? 'text-primary' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+            >
+              {t('initiatives')}
+              {currentView === 'initiatives' && (
                 <motion.div layoutId="nav-underline" className="absolute -bottom-1.5 left-0 right-0 h-[2px] bg-primary rounded-full" />
               )}
             </button>
@@ -3318,6 +3342,78 @@ const AIRescueAssessment = ({ result, onViewDetails }: { result: any, onViewDeta
   );
 };
 
+const AISocialAssessment = ({ result, onViewDetails }: { result: any, onViewDetails: (id: string) => void }) => {
+  if (!result) return (
+    <div className="glass-card rounded-[2.5rem] p-8 border border-slate-200 dark:border-white/5 h-full flex flex-col items-center justify-center text-center space-y-4 opacity-50 bg-white dark:bg-slate-950">
+       <div className="h-16 w-16 rounded-3xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-gray-700 dark:text-gray-300">
+         <Cpu size={32} />
+       </div>
+       <p className="text-xs font-bold text-gray-500 uppercase tracking-widest leading-relaxed">Submit a report to see<br/>AI Social Assessment</p>
+    </div>
+  );
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="glass-card rounded-[2.5rem] p-6 border border-pink-500/20 relative overflow-hidden bg-white dark:bg-slate-950"
+    >
+      <div className="absolute -top-12 -right-12 h-32 w-32 bg-pink-500/5 blur-3xl rounded-full" />
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-2xl bg-slate-100 dark:bg-[#060B16] flex items-center justify-center text-pink-500 shadow-[0_0_15px_rgba(236,72,153,0.1)] border border-slate-200 dark:border-pink-500/20">
+            <Cpu size={18} />
+          </div>
+          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-pink-500">AI Social Intelligence</h3>
+        </div>
+        <span className="px-2 py-0.5 rounded-full bg-pink-500 text-white text-[7px] font-black uppercase tracking-widest">Active</span>
+      </div>
+      
+      <div className="space-y-4">
+        {[
+          { label: 'Category', value: result.category || 'Analyzing...', color: 'text-pink-500', icon: Heart, iconColor: 'text-pink-500/50' },
+          { label: 'Urgency', value: result.priority || 'High', color: result.priority === 'Critical' || result.priority === 'Danger' ? 'text-red-500' : 'text-orange-400', icon: ShieldAlert, iconColor: 'text-pink-500/50' },
+          { label: 'Dept.', value: result.department || 'Social Help', color: 'text-pink-500', icon: Building2, iconColor: 'text-pink-500/50' },
+          { label: 'Risk level', value: result.visualRiskLevel || 'Calculating...', color: 'text-pink-500', icon: Activity, iconColor: 'text-pink-500/50' },
+          { label: 'ETA', value: result.estimatedTime || 'Pending', color: 'text-pink-500', icon: Clock, iconColor: 'text-pink-500/50' },
+        ].map((item, i) => (
+          <div key={i} className="flex items-center justify-between group">
+            <div className="flex items-center gap-3 text-gray-500 group-hover:text-gray-900 dark:group-hover:text-gray-300 transition-colors">
+              <item.icon size={14} className={item.iconColor} />
+              <span className="text-[9px] font-bold uppercase tracking-wider">{item.label}</span>
+            </div>
+            <span className={`text-[9px] font-black ${item.color} text-right uppercase tracking-widest`}>{item.value}</span>
+          </div>
+        ))}
+      </div>
+
+      {(result.aiSummary || result.aiRemarks || result.imageSummary) && (
+        <div className="mt-6 pt-6 border-t border-slate-200 dark:border-white/5 space-y-4 relative z-10">
+          {result.aiSummary && (
+             <div className="space-y-1">
+                <p className="text-[8px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-400">Contextual Summary</p>
+                <p className="text-[10px] text-gray-800 dark:text-gray-400 leading-relaxed italic border-l-2 border-pink-500/30 pl-3">{result.aiSummary}</p>
+             </div>
+          )}
+          {result.aiRemarks && (
+             <div className="p-3 rounded-xl bg-pink-500/5 border border-pink-500/10">
+                <p className="text-[8px] font-black uppercase tracking-widest text-pink-500/60 mb-1">AI Recommendation</p>
+                <p className="text-[10px] text-pink-600 dark:text-pink-400 leading-relaxed font-bold">{result.aiRemarks}</p>
+             </div>
+          )}
+        </div>
+      )}
+      
+      <button 
+        onClick={() => onViewDetails(result.id)}
+        className="w-full mt-8 py-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-[9px] font-black text-slate-900 dark:text-white uppercase tracking-widest hover:bg-pink-500 hover:text-white hover:border-pink-500 transition-all duration-300 shadow-lg"
+      >
+        View Full Report
+      </button>
+    </motion.div>
+  );
+};
+
 const LiveRescueTracker = ({ complaint, onViewDetails }: { complaint: any, onViewDetails: (id: string) => void }) => {
   const hasComplaint = !!complaint;
   const timelineSteps = complaint ? generateTimeline(complaint.status || 'Submitted', complaint.submittedAt || '') : [
@@ -4151,7 +4247,7 @@ const SocialHelpPage = ({ language, complaints, onComplaintSubmit, onViewDetails
                 </div>
 
                 <div className="space-y-8 flex flex-col h-full">
-                   <SocialHelpAIAssessment result={latestCase} onViewDetails={onViewDetails} />
+                   <AISocialAssessment result={latestCase} onViewDetails={onViewDetails} />
                    <SocialHelpTracker complaint={latestCase} onViewDetails={onViewDetails} />
                 </div>
             </div>
@@ -4160,42 +4256,119 @@ const SocialHelpPage = ({ language, complaints, onComplaintSubmit, onViewDetails
 };
 
 const InitiativesPage = ({ language, initiatives, onRefresh }: { language: Language, initiatives: Initiative[], onRefresh: () => void }) => {
-    const [joining, setJoining] = useState<string | null>(null);
     const t = (en: string, hi: string) => language === 'hi' ? hi : en;
-
-    const handleJoin = async (id: string) => {
-        setJoining(id);
-        try {
-            const response = await fetch(`/api/initiatives/${id}/join`, { method: 'PATCH' });
-            if (response.ok) {
-                onRefresh();
-                setTimeout(() => setJoining(null), 1000);
-            }
-        } catch (e) {
-            setJoining(null);
-        }
-    };
+    const [filter, setFilter] = useState('All');
+    
+    const categories = ['All', ...new Set(initiatives.map(i => i.category))];
+    const filteredInitiatives = filter === 'All' ? initiatives : initiatives.filter(i => i.category === filter);
 
     return (
-        <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4">
-            <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-indigo-600 via-violet-700 to-fuchsia-800 p-10 text-white shadow-2xl">
-                <div className="relative z-10 space-y-4 max-w-2xl">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-indigo-200 text-[10px] font-black uppercase tracking-widest backdrop-blur-md">
-                        <Users size={12} /> {t('Community Power', 'सामुदायिक शक्ति')}
-                    </div>
-                    <h1 className="text-4xl font-black tracking-tight leading-tight">
-                        {t('Shape Your City, Together.', 'अपने शहर को साथ मिलकर संवारें।')}
-                    </h1>
-                    <p className="text-indigo-100 text-sm font-medium leading-relaxed">
-                        {t('CitizenConnect initiatives are community-driven projects aimed at making our urban spaces greener, cleaner, and safer. Join hands with fellow citizens to drive real change.', 'सिटिजनकनेक्ट पहल सामुदायिक नेतृत्व वाली परियोजनाएं हैं जिनका उद्देश्य हमारे शहरी क्षेत्रों को हरा-भरा, स्वच्छ और सुरक्षित बनाना है। वास्तविक बदलाव लाने के लिए साथी नागरिकों के साथ हाथ मिलाएं।')}
-                    </p>
+        <div className="space-y-16 animate-in fade-in slide-in-from-bottom-6 duration-700">
+            {/* Professional Hero Section */}
+            <div className="relative overflow-hidden rounded-[3rem] bg-slate-900 min-h-[400px] flex items-center p-12 shadow-2xl">
+                <div className="absolute inset-0 overflow-hidden">
+                    <div className="absolute -top-[40%] -right-[10%] h-[150%] w-[60%] bg-gradient-to-br from-indigo-500/20 to-purple-600/20 blur-[120px] rounded-full animate-pulse" />
+                    <div className="absolute -bottom-[40%] -left-[10%] h-[150%] w-[60%] bg-gradient-to-tr from-fuchsia-500/20 to-blue-600/20 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '2s' }} />
                 </div>
-                <Sparkles size={180} className="absolute -right-10 -bottom-10 opacity-10 rotate-12" />
-                <div className="absolute top-0 right-0 h-full w-1/3 bg-white/5 skew-x-12 translate-x-20" />
+                
+                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full">
+                    <div className="space-y-8">
+                        <motion.div 
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-indigo-300 text-[10px] font-black uppercase tracking-[0.2em] backdrop-blur-xl"
+                        >
+                            <Sparkles size={14} className="text-yellow-400" /> {t('Civic Excellence Platform', 'नागरिक उत्कृष्टता मंच')}
+                        </motion.div>
+                        <motion.h1 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.1 }}
+                          className="text-5xl md:text-6xl font-black tracking-tight leading-[1.1] text-white"
+                        >
+                            {t('Transforming Local Governance Through Community Action.', 'सामुदायिक कार्रवाई के माध्यम से स्थानीय शासन को बदलना।')}
+                        </motion.h1>
+                        <motion.p 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.2 }}
+                          className="text-slate-400 text-base font-medium leading-relaxed max-w-xl"
+                        >
+                            {t('CitizenConnect initiatives represent the pinnacle of community-led urban development. Discover, track, and support the projects shaping the future of our digital city.', 'सिटिजनकनेक्ट पहल सामुदायिक नेतृत्व वाले शहरी विकास के शिखर का प्रतिनिधित्व करती है। हमारे डिजिटल शहर के भविष्य को आकार देने वाली परियोजनाओं को खोजें, ट्रैक करें और समर्थन करें।')}
+                        </motion.p>
+                        <motion.div 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3 }}
+                          className="flex flex-wrap gap-4"
+                        >
+                           <button className="px-10 py-4 bg-white text-slate-900 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-indigo-50 transition-all shadow-xl shadow-white/5">Explore Active Projects</button>
+                           <div className="flex -space-x-3 items-center ml-4">
+                              {[1, 2, 3, 4].map(i => (
+                                <div key={i} className="h-10 w-10 rounded-full border-2 border-slate-900 bg-slate-800 flex items-center justify-center overflow-hidden">
+                                  <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="user" />
+                                </div>
+                              ))}
+                              <div className="h-10 w-10 rounded-full border-2 border-slate-900 bg-indigo-600 flex items-center justify-center text-[10px] font-black text-white">5k+</div>
+                              <span className="ml-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('Joined Today', 'आज शामिल हुए')}</span>
+                           </div>
+                        </motion.div>
+                    </div>
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {initiatives.map((item) => {
+            {/* Stats Bar */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {[
+                  { label: 'Active Projects', value: initiatives.length, icon: LayoutDashboard, color: 'text-blue-500' },
+                  { label: 'Volunteers Engaged', value: initiatives.reduce((acc, curr) => acc + curr.volunteersJoined, 0), icon: Users, color: 'text-emerald-500' },
+                  { label: 'Impact Score', value: '9.8/10', icon: Zap, color: 'text-amber-500' },
+                  { label: 'Cities Covered', value: '12+', icon: MapPin, color: 'text-indigo-500' },
+                ].map((stat, i) => (
+                  <motion.div 
+                    key={i}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="glass-card rounded-3xl p-6 border border-slate-100 dark:border-white/5 bg-white dark:bg-slate-900/50 flex flex-col items-center text-center space-y-2"
+                  >
+                    <div className={`h-10 w-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center ${stat.color}`}>
+                      <stat.icon size={20} />
+                    </div>
+                    <span className="text-2xl font-black dark:text-white">{stat.value}</span>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{stat.label}</span>
+                  </motion.div>
+                ))}
+            </div>
+
+            {/* Filter Section */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2 border-b border-slate-100 dark:border-white/5">
+                <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-lg bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
+                        <Filter size={16} />
+                    </div>
+                    <h2 className="text-lg font-black dark:text-white uppercase tracking-wider">{t('Discovery Gallery', 'डिस्कवरी गैलरी')}</h2>
+                </div>
+                <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+                    {categories.map(cat => (
+                        <button 
+                            key={cat}
+                            onClick={() => setFilter(cat)}
+                            className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                                filter === cat 
+                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' 
+                                    : 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-200'
+                            }`}
+                        >
+                            {cat}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Gallery Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                {filteredInitiatives.length > 0 ? filteredInitiatives.map((item, idx) => {
                     const progress = item.volunteersRequired > 0 
                         ? Math.min(100, Math.round((item.volunteersJoined / item.volunteersRequired) * 100)) 
                         : 0;
@@ -4203,41 +4376,64 @@ const InitiativesPage = ({ language, initiatives, onRefresh }: { language: Langu
                     return (
                         <motion.div 
                             key={item._id}
-                            whileHover={{ y: -8, scale: 1.02 }}
-                            className="group rounded-[2.5rem] overflow-hidden border border-gray-100 dark:border-white/5 shadow-xl flex flex-col h-full bg-white dark:bg-[#060B16] transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: idx * 0.05 }}
+                            whileHover={{ y: -10 }}
+                            className="group rounded-[2.5rem] overflow-hidden border border-slate-100 dark:border-white/5 shadow-xl flex flex-col h-full bg-white dark:bg-slate-900 transition-all duration-500 hover:shadow-2xl hover:shadow-indigo-500/10"
                         >
-                            <div className="relative h-56 overflow-hidden">
+                            <div className="relative h-64 overflow-hidden">
                                 <img 
                                     src={item.images[0] || "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?q=80&w=2670&auto=format&fit=crop"} 
                                     alt={item.title} 
-                                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                                    className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110" 
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                <div className="absolute top-4 left-4 bg-white/90 dark:bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest text-primary border border-primary/20">
-                                    {item.category}
+                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-80" />
+                                
+                                <div className="absolute top-6 left-6 flex gap-2">
+                                  <div className="bg-white/95 dark:bg-slate-900/90 backdrop-blur-md px-4 py-2 rounded-2xl text-[9px] font-black uppercase tracking-widest text-indigo-600 border border-white/20 shadow-xl">
+                                      {item.category}
+                                  </div>
+                                  <div className={`px-4 py-2 rounded-2xl text-[9px] font-black uppercase tracking-widest text-white border border-white/10 backdrop-blur-md shadow-xl ${item.status === 'Active' ? 'bg-emerald-500/80' : 'bg-amber-500/80'}`}>
+                                      {item.status}
+                                  </div>
                                 </div>
-                                <div className="absolute bottom-4 right-4 h-10 w-10 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                                    <MapPin size={18} />
+                                
+                                <div className="absolute bottom-6 left-6 right-6">
+                                  <div className="flex items-center gap-2 text-white/90">
+                                    <MapPin size={12} className="text-indigo-400" />
+                                    <span className="text-[10px] font-bold truncate tracking-wide">{item.location.address}</span>
+                                  </div>
                                 </div>
                             </div>
-                            <div className="p-8 flex-1 flex flex-col">
-                                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-primary transition-colors">{item.title}</h3>
-                                <p className="text-xs text-slate-500 dark:text-gray-400 mb-8 line-clamp-3 leading-relaxed font-medium">{item.description}</p>
+
+                            <div className="p-8 flex-1 flex flex-col space-y-6">
+                                <div>
+                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-indigo-500 transition-colors leading-tight">{item.title}</h3>
+                                    <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-3 leading-relaxed font-medium">{item.description}</p>
+                                </div>
                                 
                                 <div className="mt-auto space-y-6">
-                                    <div className="space-y-3">
+                                    <div className="space-y-4 bg-slate-50 dark:bg-white/5 p-5 rounded-3xl border border-slate-100 dark:border-white/5">
                                         <div className="flex justify-between items-end">
-                                            <div className="flex flex-col">
-                                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t('Volunteer Stats', 'स्वयंसेवक आँकड़े')}</span>
-                                                <span className="text-lg font-black dark:text-white">{item.volunteersJoined} <span className="text-xs text-slate-400 font-bold">/ {item.volunteersRequired}</span></span>
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{t('Mobilization Progress', 'लामबंदी प्रगति')}</span>
+                                                <div className="flex items-center gap-2">
+                                                  <Users size={14} className="text-indigo-500" />
+                                                  <span className="text-lg font-black dark:text-white">{item.volunteersJoined} <span className="text-[10px] text-slate-400 font-bold tracking-widest">/ {item.volunteersRequired}</span></span>
+                                                </div>
                                             </div>
-                                            <span className="text-sm font-black text-primary">{progress}%</span>
+                                            <div className="flex flex-col items-end">
+                                              <span className="text-lg font-black text-indigo-500">{progress}%</span>
+                                              <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{t('Capacity', 'क्षमता')}</span>
+                                            </div>
                                         </div>
-                                        <div className="h-2.5 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden p-0.5">
+                                        <div className="h-2 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden relative shadow-inner">
                                             <motion.div 
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${progress}%` }}
-                                                className={`h-full rounded-full ${progress === 100 ? 'bg-emerald-500' : 'bg-primary'} shadow-[0_0_10px_rgba(59,130,246,0.5)]`}
+                                                transition={{ duration: 1.5, ease: "easeOut" }}
+                                                className={`h-full rounded-full ${progress >= 100 ? 'bg-gradient-to-r from-emerald-400 to-emerald-600' : 'bg-gradient-to-r from-indigo-500 to-purple-600'} shadow-[0_0_15px_rgba(99,102,241,0.3)]`}
                                             />
                                         </div>
                                     </div>
@@ -4248,37 +4444,41 @@ const InitiativesPage = ({ language, initiatives, onRefresh }: { language: Langu
                                                 href={item.groupLink} 
                                                 target="_blank" 
                                                 rel="noopener noreferrer"
-                                                className="w-full py-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-3 hover:bg-emerald-500/20 shadow-lg shadow-emerald-500/5 active:scale-[0.98]"
+                                                className="w-full py-4 rounded-2xl bg-indigo-600 text-white font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 hover:bg-indigo-700 shadow-xl shadow-indigo-600/20 active:scale-[0.98] group/btn"
                                             >
-                                                <MessageCircle size={14} /> {t('Join Community Group', 'सामुदायिक समूह में शामिल हों')}
+                                                {t('ACCESS COMMUNITY PORTAL', 'सामुदायिक पोर्टल तक पहुंचें')} 
+                                                <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                                             </a>
                                         )}
-                                        
-                                        <button 
-                                            onClick={() => handleJoin(item._id)}
-                                            disabled={joining === item._id || progress >= 100}
-                                            className={`w-full py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${
-                                                joining === item._id 
-                                                ? 'bg-gray-100 dark:bg-white/5 text-gray-400 cursor-not-allowed' 
-                                                : progress >= 100
-                                                ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 cursor-not-allowed'
-                                                : 'bg-primary text-white hover:bg-blue-700 shadow-xl shadow-primary/20 active:scale-[0.98]'
-                                            }`}
-                                        >
-                                            {joining === item._id ? (
-                                                <div className="h-4 w-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
-                                            ) : progress >= 100 ? (
-                                                <><Check size={14} /> {t('Initiative Full', 'पहल पूर्ण')}</>
-                                            ) : (
-                                                <><Users size={14} /> {t('Join Initiative', 'पहल में शामिल हों')}</>
-                                            )}
+                                        <button className="w-full py-3.5 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 font-black text-[9px] uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                                          {t('View Impact Report', 'प्रभाव रिपोर्ट देखें')}
                                         </button>
                                     </div>
                                 </div>
                             </div>
                         </motion.div>
                     );
-                })}
+                }) : (
+                  <div className="col-span-full py-20 text-center space-y-4">
+                      <div className="h-20 w-20 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center mx-auto text-slate-300">
+                        <Inbox size={40} />
+                      </div>
+                      <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">No initiatives found in this category.</p>
+                      <button onClick={() => setFilter('All')} className="text-indigo-500 font-black text-[10px] uppercase tracking-widest hover:underline">Show all projects</button>
+                  </div>
+                )}
+            </div>
+
+            {/* Newsletter CTA */}
+            <div className="bg-slate-50 dark:bg-white/5 rounded-[3rem] p-12 border border-slate-100 dark:border-white/5 flex flex-col md:flex-row items-center justify-between gap-12">
+               <div className="space-y-4 max-w-xl">
+                  <h3 className="text-3xl font-black text-slate-900 dark:text-white leading-tight">Stay ahead with the <span className="text-indigo-600">Civic Pulse</span> newsletter.</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">Get weekly updates on city-wide initiatives, impact reports, and upcoming community drives directly in your inbox.</p>
+               </div>
+               <div className="w-full md:w-auto flex flex-col sm:flex-row gap-4">
+                  <input type="email" placeholder="Enter your email address" className="px-6 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 w-full md:w-80 shadow-soft" />
+                  <button className="px-10 py-4 bg-slate-900 dark:bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:brightness-125 transition-all shadow-lg shadow-indigo-500/10">Subscribe Now</button>
+               </div>
             </div>
         </div>
     );
@@ -5963,6 +6163,7 @@ export default function App() {
           setLanguage={setLanguage}
           theme={theme}
           setTheme={setTheme}
+          onMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         />
       )}
       
@@ -5971,7 +6172,7 @@ export default function App() {
         
         {/* Mobile Sidebar Overlay */}
         <AnimatePresence>
-          {isMobileMenuOpen && isDashboardView && (
+          {isMobileMenuOpen && (
             <>
               <motion.div 
                 initial={{ opacity: 0 }}
@@ -6000,7 +6201,47 @@ export default function App() {
                     </button>
                   </div>
                   <div className="flex-1 overflow-y-auto p-4">
-                    <SidebarContent currentView={view} setView={(v) => { setView(v); setIsMobileMenuOpen(false); }} language={language} />
+                    {isDashboardView ? (
+                      <SidebarContent currentView={view} setView={(v) => { setView(v); setIsMobileMenuOpen(false); }} language={language} />
+                    ) : (
+                      <div className="space-y-2">
+                        <button 
+                          onClick={() => { setView('landing'); setIsMobileMenuOpen(false); }}
+                          className={`w-full flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-bold transition-all ${view === 'landing' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'}`}
+                        >
+                          <Home size={20} /> {t('home')}
+                        </button>
+                        <button 
+                          onClick={() => { setView('initiatives'); setIsMobileMenuOpen(false); }}
+                          className={`w-full flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-bold transition-all ${view === 'initiatives' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'}`}
+                        >
+                          <Sparkles size={20} /> {t('initiatives')}
+                        </button>
+                        <button 
+                          onClick={() => { setView('about'); setIsMobileMenuOpen(false); }}
+                          className={`w-full flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-bold transition-all ${view === 'about' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'}`}
+                        >
+                          <Info size={20} /> {t('about')}
+                        </button>
+                        {!user && (
+                          <>
+                            <div className="h-px bg-gray-100 dark:bg-white/5 my-4" />
+                            <button 
+                              onClick={() => { setView('login'); setIsMobileMenuOpen(false); }}
+                              className="w-full flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5"
+                            >
+                              <LogIn size={20} /> {t('login')}
+                            </button>
+                            <button 
+                              onClick={() => { setView('signup'); setIsMobileMenuOpen(false); }}
+                              className="w-full flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-bold bg-primary text-white shadow-lg shadow-primary/20"
+                            >
+                              <UserPlus size={20} /> {t('signup')}
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div className="p-4 border-t border-gray-100 dark:border-white/10">
                     <button
