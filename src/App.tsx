@@ -438,9 +438,13 @@ const TRANSLATIONS = {
     email_addr: "Email Address",
     password: "Password",
     login_btn: "Login to Account",
-    signup_btn: "Create Admin Account",
+    signup_btn: "Create Account",
     no_account: "Don't have an account? Sign up",
     has_account: "Already have an account? Login",
+    select_role: "Select Your Role",
+    role_citizen: "Citizen",
+    role_official: "Official",
+    role_admin: "Administrator",
     about_title: "About CitizenConnect",
     about_desc: "CitizenConnect was born at the intersection of civic passion and modern technology. We believe every citizen deserves a direct, transparent, and efficient way to interact with their local government.",
     our_mission: "Our Mission",
@@ -524,9 +528,13 @@ const TRANSLATIONS = {
     email_addr: "ईमेल पता",
     password: "पासवर्ड",
     login_btn: "खाते में लॉगिन करें",
-    signup_btn: "व्यवस्थापक खाता बनाएं",
+    signup_btn: "खाता बनाएं",
     no_account: "खाता नहीं है? साइन अप करें",
     has_account: "पहले से ही खाता है? लॉगिन करें",
+    select_role: "अपनी भूमिका चुनें",
+    role_citizen: "नागरिक",
+    role_official: "अधिकारी",
+    role_admin: "प्रशासक",
     about_title: "सिटिजनकनेक्ट के बारे में",
     about_desc: "सिटिजनकनेक्ट का जन्म नागरिक जुनून और आधुनिक तकनीक के संगम पर हुआ था। हमारा मानना है कि प्रत्येक नागरिक अपने स्थानीय सरकार के साथ बातचीत करने का एक सीधा, पारदर्शी और कुशल तरीका हकदार है।",
     our_mission: "हमारा मिशन",
@@ -1309,6 +1317,7 @@ const AuthPage = ({ type, setView, onLogin, language }: { type: 'login' | 'signu
   const [address, setAddress] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [role, setRole] = useState<'citizen' | 'official' | 'admin'>('citizen');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1319,7 +1328,7 @@ const AuthPage = ({ type, setView, onLogin, language }: { type: 'login' | 'signu
       const endpoint = type === 'login' ? '/api/auth/login' : '/api/auth/signup';
       const body = type === 'login' 
         ? { email, password } 
-        : { name, email, password, phone, address };
+        : { name, email, password, role, phone, address };
 
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -1418,6 +1427,25 @@ const AuthPage = ({ type, setView, onLogin, language }: { type: 'login' | 'signu
                   placeholder="Enter your address..."
                   className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-950 px-4 py-3 text-sm transition-all focus:border-primary focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary/10 outline-none dark:text-white resize-none h-20" 
                 />
+              </div>
+              <div className="space-y-3">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-1">{t('select_role')}</label>
+                <div className="grid grid-cols-3 gap-3">
+                  {(['citizen', 'official', 'admin'] as const).map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setRole(r)}
+                      className={`py-2 px-1 rounded-xl border text-[10px] font-black uppercase tracking-tighter transition-all ${
+                        role === r 
+                          ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20 scale-[1.02]' 
+                          : 'border-gray-100 dark:border-slate-800 text-gray-400 hover:border-primary/30'
+                      }`}
+                    >
+                      {t(`role_${r}` as any)}
+                    </button>
+                  ))}
+                </div>
               </div>
             </>
           )}
@@ -2376,6 +2404,148 @@ const ImpactAnalytics = ({ language, complaints }: { language: Language, complai
             <p className="text-[9px] font-bold uppercase tracking-widest text-dash-secondary">{s.label}</p>
           </motion.div>
         ))}
+      </div>
+    </div>
+  );
+};
+
+
+const AdminDashboard = ({ language, user, complaints, theme, setView }: { language: Language, user: User, complaints: Complaint[], theme: Theme, setView: (v: View) => void }) => {
+  const t = (key: keyof typeof TRANSLATIONS['en']) => TRANSLATIONS[language][key] || key;
+  
+  // Calculate stats
+  const totalComplaints = complaints.length;
+  const pendingComplaints = complaints.filter(c => c.status !== 'Resolved').length;
+  const resolvedComplaints = complaints.filter(c => c.status === 'Resolved').length;
+  const totalUsers = 150; // Mock for now
+
+  const stats = [
+    { label: 'Total Complaints', value: totalComplaints, icon: FileText, color: 'text-blue-500', glow: 'shadow-blue-500/20' },
+    { label: 'Pending Issues', value: pendingComplaints, icon: Clock, color: 'text-amber-500', glow: 'shadow-amber-500/20' },
+    { label: 'Resolved', value: resolvedComplaints, icon: CheckCircle2, color: 'text-emerald-500', glow: 'shadow-emerald-500/20' },
+    { label: 'Active Citizens', value: totalUsers, icon: Users, color: 'text-purple-500', glow: 'shadow-purple-500/20' },
+  ];
+
+  return (
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* Admin Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 to-slate-800 p-8 rounded-[2.5rem] shadow-2xl border border-white/5 relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-8 opacity-10">
+          <ShieldAlert size={120} className="text-white" />
+        </div>
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Admin Command Center</span>
+          </div>
+          <h1 className="text-4xl font-black text-white tracking-tight">System Overview</h1>
+          <p className="text-slate-400 mt-2 text-sm font-medium">Monitoring civic impact across all sectors.</p>
+        </div>
+        <div className="flex gap-3 relative z-10">
+          <button className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl text-xs font-bold transition-all border border-white/10 flex items-center gap-2">
+            <Download size={16} /> Export Report
+          </button>
+          <button className="px-6 py-3 bg-primary text-white rounded-2xl text-xs font-bold transition-all shadow-lg shadow-primary/20 flex items-center gap-2">
+            <Activity size={16} /> Live Logs
+          </button>
+        </div>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((s, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+            className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-gray-100 dark:border-slate-800 shadow-sm group hover:shadow-xl transition-all"
+          >
+            <div className={`h-12 w-12 rounded-2xl bg-gray-50 dark:bg-slate-950 flex items-center justify-center ${s.color} mb-4 group-hover:scale-110 transition-transform`}>
+              <s.icon size={24} />
+            </div>
+            <p className="text-3xl font-black dark:text-white mb-1">{s.value}</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-gray-400">{s.label}</p>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Main Content Area */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Recent Complaints */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-black dark:text-white flex items-center gap-3">
+              <Inbox size={24} className="text-primary" /> Recent Submissions
+            </h2>
+            <button className="text-xs font-bold text-primary hover:underline">View All</button>
+          </div>
+          <div className="space-y-4">
+            {complaints.length > 0 ? complaints.slice(0, 5).map((c) => (
+              <div key={c.id} className="bg-white dark:bg-slate-900 p-5 rounded-[1.5rem] border border-gray-100 dark:border-slate-800 flex items-center justify-between gap-4 hover:border-primary/20 transition-all cursor-pointer">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-xl bg-gray-100 dark:bg-slate-950 flex items-center justify-center text-primary overflow-hidden">
+                    {c.image ? <img src={c.image} className="h-full w-full object-cover" alt="" /> : <FileText size={20} />}
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm dark:text-white line-clamp-1">{c.subject}</h4>
+                    <p className="text-[10px] text-gray-500 font-medium uppercase tracking-tight">{c.department} • {c.submittedAt}</p>
+                  </div>
+                </div>
+                <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${
+                  c.status === 'Resolved' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                }`}>
+                  {c.status}
+                </div>
+              </div>
+            )) : (
+              <div className="p-8 text-center text-gray-400 bg-gray-50 dark:bg-slate-950 rounded-[1.5rem] border border-dashed border-gray-200 dark:border-slate-800">
+                No recent submissions found.
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* System Health / Performance */}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-black dark:text-white flex items-center gap-3">
+            <Zap size={24} className="text-amber-500" /> Infrastructure
+          </h2>
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] border border-gray-100 dark:border-slate-800 space-y-6">
+             <div className="space-y-2">
+                <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-gray-400">
+                  <span>API Response Time</span>
+                  <span className="text-emerald-500">Fast (45ms)</span>
+                </div>
+                <div className="h-2 w-full bg-gray-100 dark:bg-slate-950 rounded-full overflow-hidden">
+                  <div className="h-full w-[95%] bg-emerald-500" />
+                </div>
+             </div>
+             <div className="space-y-2">
+                <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-gray-400">
+                  <span>Database Load</span>
+                  <span className="text-amber-500">Moderate (42%)</span>
+                </div>
+                <div className="h-2 w-full bg-gray-100 dark:bg-slate-950 rounded-full overflow-hidden">
+                  <div className="h-full w-[42%] bg-amber-500" />
+                </div>
+             </div>
+             <div className="space-y-2">
+                <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-gray-400">
+                  <span>AI Queue</span>
+                  <span className="text-blue-500">Normal</span>
+                </div>
+                <div className="h-2 w-full bg-gray-100 dark:bg-slate-950 rounded-full overflow-hidden">
+                  <div className="h-full w-[15%] bg-blue-500" />
+                </div>
+             </div>
+             <div className="pt-4 border-t border-gray-100 dark:border-slate-800">
+                <div className="flex items-center gap-3 text-emerald-500 font-bold text-xs uppercase tracking-widest">
+                  <CheckCircle2 size={16} /> All Systems Operational
+                </div>
+             </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -6274,25 +6444,35 @@ export default function App() {
                 {/* Protected Dashboard Routes */}
                 <Route path="/dashboard" element={user ? (
                   <PageWrapper>
-                    <Dashboard 
-                      language={language} 
-                      user={user} 
-                      activeComplaint={complaints.find(c => c.id === activeComplaintId) || null}
-                      onComplaintSubmit={handleNewComplaint}
-                      onViewDetails={(id) => {
-                        setSelectedComplaintId(id);
-                        setView('complaint-details');
-                      }}
-                      setView={setView}
-                      complaints={complaints}
-                      theme={theme}
-                      globalSearch={view === 'dashboard' ? searchQuery : undefined}
-                      globalPosition={globalPosition}
-                      setGlobalPosition={setGlobalPosition}
-                      globalAddress={globalAddress}
-                      setGlobalAddress={setGlobalAddress}
-                      isSearchingLocation={isSearchingLocation}
-                    />
+                    {user.role === 'admin' ? (
+                      <AdminDashboard 
+                        language={language} 
+                        user={user} 
+                        complaints={complaints}
+                        theme={theme}
+                        setView={setView}
+                      />
+                    ) : (
+                      <Dashboard 
+                        language={language} 
+                        user={user} 
+                        activeComplaint={complaints.find(c => c.id === activeComplaintId) || null}
+                        onComplaintSubmit={handleNewComplaint}
+                        onViewDetails={(id) => {
+                          setSelectedComplaintId(id);
+                          setView('complaint-details');
+                        }}
+                        setView={setView}
+                        complaints={complaints}
+                        theme={theme}
+                        globalSearch={view === 'dashboard' ? searchQuery : undefined}
+                        globalPosition={globalPosition}
+                        setGlobalPosition={setGlobalPosition}
+                        globalAddress={globalAddress}
+                        setGlobalAddress={setGlobalAddress}
+                        isSearchingLocation={isSearchingLocation}
+                      />
+                    )}
                   </PageWrapper>
                 ) : <Navigate to="/login" replace />} />
                 

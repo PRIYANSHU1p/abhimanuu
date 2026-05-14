@@ -8,10 +8,11 @@ exports.signup = async (req, res, next) => {
     try {
         const { name, email, password, role, phone, address } = req.body;
 
-        // Check if user already exists
-        const userExists = await User.findOne({ email });
+        // Check if user already exists (by email or phone)
+        const userExists = await User.findOne({ $or: [{ email }, { phone }] });
         if (userExists) {
-            return res.status(400).json({ success: false, message: 'User already exists' });
+            const field = userExists.email === email ? 'Email' : 'Phone number';
+            return res.status(400).json({ success: false, message: `${field} already registered` });
         }
 
         // Create user
@@ -26,7 +27,7 @@ exports.signup = async (req, res, next) => {
 
         sendTokenResponse(user, 201, res);
     } catch (err) {
-        res.status(500).json({ success: false, error: err.message });
+        res.status(500).json({ success: false, message: err.message });
     }
 };
 
@@ -58,7 +59,7 @@ exports.login = async (req, res, next) => {
 
         sendTokenResponse(user, 200, res);
     } catch (err) {
-        res.status(500).json({ success: false, error: err.message });
+        res.status(500).json({ success: false, message: err.message });
     }
 };
 
@@ -70,7 +71,7 @@ exports.getMe = async (req, res, next) => {
         const user = await User.findById(req.user.id);
         res.status(200).json(user);
     } catch (err) {
-        res.status(500).json({ success: false, error: err.message });
+        res.status(500).json({ success: false, message: err.message });
     }
 };
 
@@ -120,7 +121,7 @@ exports.forgotPassword = async (req, res, next) => {
             instructions: 'In a real app, this would be sent via email. For now, check the server logs to find your reset token.'
         });
     } catch (err) {
-        res.status(500).json({ success: false, error: err.message });
+        res.status(500).json({ success: false, message: err.message });
     }
 };
 
@@ -156,7 +157,7 @@ exports.resetPassword = async (req, res, next) => {
             message: 'Password reset successful. You can now login with your new password.'
         });
     } catch (err) {
-        res.status(500).json({ success: false, error: err.message });
+        res.status(500).json({ success: false, message: err.message });
     }
 };
 
@@ -182,7 +183,7 @@ exports.updateDetails = async (req, res, next) => {
             data: user
         });
     } catch (err) {
-        res.status(500).json({ success: false, error: err.message });
+        res.status(500).json({ success: false, message: err.message });
     }
 };
 
@@ -203,6 +204,6 @@ exports.updatePassword = async (req, res, next) => {
 
         sendTokenResponse(user, 200, res);
     } catch (err) {
-        res.status(500).json({ success: false, error: err.message });
+        res.status(500).json({ success: false, message: err.message });
     }
 };
