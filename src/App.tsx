@@ -341,6 +341,32 @@ const SCHEMES = [
     eligibility: "All citizens aged between 18 and 40 years.",
     howToApply: "Apply via any bank or online through eNPS.",
     startDate: "May 2015"
+  },
+  {
+    id: 7,
+    title: "Delhi Mukhyamantri Mahila Samman Yojana",
+    type: "State",
+    link: "https://edistrict.delhigovt.nic.in/",
+    registrationLink: "https://edistrict.delhigovt.nic.in/",
+    description: "Monthly financial assistance of ₹1000 to women aged 18+ in Delhi for economic empowerment.",
+    category: "Social",
+    benefits: "₹1000 per month direct bank transfer.",
+    eligibility: "Women aged 18+, Delhi resident, non-taxpayer.",
+    howToApply: "Apply via Delhi e-district portal or nearby camps.",
+    startDate: "Mar 2024"
+  },
+  {
+    id: 8,
+    title: "Maharashtra Mahatma Jyotirao Phule Jan Arogya Yojana",
+    type: "State",
+    link: "https://www.jeevandayee.gov.in/",
+    registrationLink: "https://www.jeevandayee.gov.in/",
+    description: "Cashless medical treatment for 34 critical diseases up to ₹5 lakh for BPL/EWS families.",
+    category: "Health",
+    benefits: "Cashless treatment up to ₹5 Lakh.",
+    eligibility: "Ration card holders in Maharashtra.",
+    howToApply: "Visit any empaneled hospital with Aadhaar.",
+    startDate: "July 2012"
   }
 ];
 
@@ -3074,7 +3100,7 @@ const GovDonationsPage = ({ language, donations }: { language: Language, donatio
                         </div>
                         <div className="p-8">
                             <div className="flex items-start justify-between gap-4 mb-4">
-                                <h3 className="text-xl font-black dark:text-white leading-tight group-hover:text-primary transition-colors">{org.name}</h3>
+                                <h3 className="text-xl font-black text-slate-900 dark:text-white leading-tight group-hover:text-primary transition-colors">{org.name}</h3>
                                 {org.isVerified && (
                                     <div className="shrink-0 h-6 w-6 rounded-full bg-glow-green/10 flex items-center justify-center text-glow-green border border-glow-green/20" title="Verified Fund">
                                         <ShieldCheck size={14} />
@@ -3133,7 +3159,7 @@ const RescueHero = ({ language, complaints }: { language: Language, complaints: 
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative rounded-[2rem] overflow-hidden bg-[#060B16] border border-glow-green/20 shadow-[0_0_40px_rgba(34,197,94,0.1)] min-h-[300px] flex items-center mb-8 glass-card group"
+      className="relative rounded-[2rem] overflow-hidden bg-white dark:bg-[#060B16] border border-slate-200 dark:border-glow-green/20 shadow-[0_0_40px_rgba(34,197,94,0.1)] min-h-[300px] flex items-center mb-8 glass-card group"
     >
       {/* Full Background Image */}
       <div className="absolute inset-0 z-0">
@@ -3143,7 +3169,7 @@ const RescueHero = ({ language, complaints }: { language: Language, complaints: 
           className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-1000 group-hover:scale-105" 
         />
         {/* Dark Overlay & Soft Green Lighting */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#060B16] via-[#060B16]/80 to-transparent z-10" />
+        <div className="absolute inset-0 bg-slate-900/60 z-10" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(34,197,94,0.1),transparent_70%)] z-10" />
       </div>
       
@@ -3157,7 +3183,7 @@ const RescueHero = ({ language, complaints }: { language: Language, complaints: 
           </h1>
         </div>
 
-        <p className="text-gray-400 text-sm leading-relaxed max-w-sm font-medium">
+        <p className="text-gray-100 text-sm leading-relaxed max-w-sm font-medium">
           {language === 'hi' 
             ? 'घायल, लावारिस या लुप्तप्राय जानवरों की रिपोर्ट करें और उन्हें समय पर बचाने में मदद करें।' 
             : 'Connecting citizens with rescue NGOs. Your report could be the difference between life and death for a voiceless soul.'}
@@ -3165,28 +3191,28 @@ const RescueHero = ({ language, complaints }: { language: Language, complaints: 
         
         <div className="flex items-center gap-8 pt-2">
           <div className="flex items-center gap-4">
-             <div className="h-10 w-10 rounded-xl bg-glow-green/5 flex items-center justify-center text-glow-green/40 border border-glow-green/10">
+             <div className="h-10 w-10 rounded-xl bg-glow-green/5 flex items-center justify-center text-glow-green/60 border border-glow-green/10">
                 <PawPrint size={18} />
              </div>
              <div className="space-y-0.5">
                <p className="text-xl font-black text-white">
                  {hasData ? rescuedCount : "0"}
                </p>
-               <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Animals Saved</p>
+               <p className="text-[9px] font-bold text-gray-200 uppercase tracking-widest">Animals Saved</p>
              </div>
           </div>
           
           <div className="h-8 w-[1px] bg-white/10" />
           
           <div className="flex items-center gap-4">
-             <div className="h-10 w-10 rounded-xl bg-glow-blue/5 flex items-center justify-center text-glow-blue/40 border border-glow-blue/10">
+             <div className="h-10 w-10 rounded-xl bg-glow-blue/5 flex items-center justify-center text-glow-blue/60 border border-glow-blue/10">
                 <Building2 size={18} />
              </div>
              <div className="space-y-0.5">
                <p className="text-xl font-black text-white">
                  {nearbyNGOs}
                </p>
-               <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">NGOs & Hospitals Nearby</p>
+               <p className="text-[9px] font-bold text-gray-200 uppercase tracking-widest">NGOs & Hospitals Nearby</p>
              </div>
           </div>
         </div>
@@ -3201,37 +3227,14 @@ const RescueHero = ({ language, complaints }: { language: Language, complaints: 
            <Bone size={32} />
         </motion.div>
       </div>
-
-      {/* Particle Effect */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-10">
-        {[...Array(10)].map((_, i) => (
-          <motion.div 
-            key={i}
-            animate={{ 
-              y: [0, -30, 0],
-              opacity: [0.05, 0.2, 0.05]
-            }}
-            transition={{ 
-              duration: 5 + i, 
-              repeat: Infinity,
-              delay: i * 0.4
-            }}
-            className="absolute h-1 w-1 bg-glow-green rounded-full blur-[1px]"
-            style={{ 
-              top: `${Math.random() * 100}%`, 
-              left: `${Math.random() * 100}%` 
-            }}
-          />
-        ))}
-      </div>
     </motion.div>
   );
 };
 
 const AIRescueAssessment = ({ result, onViewDetails }: { result: any, onViewDetails: (id: string) => void }) => {
   if (!result) return (
-    <div className="glass-card rounded-[2rem] p-8 border border-white/5 h-full flex flex-col items-center justify-center text-center space-y-4 opacity-50">
-       <div className="h-16 w-16 rounded-3xl bg-white/5 flex items-center justify-center text-gray-700">
+    <div className="glass-card rounded-[2rem] p-8 border border-slate-200 dark:border-white/5 h-full flex flex-col items-center justify-center text-center space-y-4 opacity-50">
+       <div className="h-16 w-16 rounded-3xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-gray-700 dark:text-gray-300">
          <Cpu size={32} />
        </div>
        <p className="text-xs font-bold text-gray-500 uppercase tracking-widest leading-relaxed">Submit a report to see<br/>AI Rescue Assessment</p>
@@ -3242,17 +3245,17 @@ const AIRescueAssessment = ({ result, onViewDetails }: { result: any, onViewDeta
     <motion.div 
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="glass-card rounded-[2rem] p-6 border border-glow-green/20 relative overflow-hidden"
+      className="glass-card rounded-[2rem] p-6 border border-glow-green/20 relative overflow-hidden bg-white dark:bg-[#060B16]"
     >
       <div className="absolute -top-12 -right-12 h-32 w-32 bg-glow-green/5 blur-3xl rounded-full" />
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-2xl bg-[#060B16] flex items-center justify-center text-glow-green shadow-[0_0_15px_rgba(34,197,94,0.1)] border border-glow-green/20">
+          <div className="h-10 w-10 rounded-2xl bg-slate-100 dark:bg-[#060B16] flex items-center justify-center text-glow-green shadow-[0_0_15px_rgba(34,197,94,0.1)] border border-slate-200 dark:border-glow-green/20">
             <Cpu size={18} />
           </div>
-          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-glow-green drop-shadow-[0_0_8px_rgba(34,197,94,0.3)]">AI Assessment</h3>
+          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-glow-green">AI Assessment</h3>
         </div>
-        <span className="px-2 py-0.5 rounded-full bg-glow-green text-[#060B16] text-[7px] font-black uppercase shadow-[0_0_10px_rgba(34,197,94,0.3)]">Active</span>
+        <span className="px-2 py-0.5 rounded-full bg-glow-green text-white text-[7px] font-black uppercase">Active</span>
       </div>
       
       <div className="space-y-4">
@@ -3264,7 +3267,7 @@ const AIRescueAssessment = ({ result, onViewDetails }: { result: any, onViewDeta
           { label: 'Est. Resolution', value: result.estimatedTime || 'Pending', color: 'text-glow-green', icon: Clock, iconColor: 'text-glow-green/50' },
         ].map((item, i) => (
           <div key={i} className="flex items-center justify-between group">
-            <div className="flex items-center gap-3 text-gray-500 group-hover:text-gray-300 transition-colors">
+            <div className="flex items-center gap-3 text-gray-500 group-hover:text-gray-900 dark:group-hover:text-gray-300 transition-colors">
               <item.icon size={14} className={item.iconColor} />
               <span className="text-[9px] font-bold uppercase tracking-wider">{item.label}</span>
             </div>
@@ -3274,17 +3277,17 @@ const AIRescueAssessment = ({ result, onViewDetails }: { result: any, onViewDeta
       </div>
 
       {(result.aiSummary || result.aiRemarks || result.safetyPrecautions || result.imageSummary) && (
-        <div className="mt-6 pt-6 border-t border-white/5 space-y-4 relative z-10">
+        <div className="mt-6 pt-6 border-t border-slate-200 dark:border-white/5 space-y-4 relative z-10">
           {result.aiSummary && (
              <div className="space-y-1">
-                <p className="text-[8px] font-black uppercase tracking-widest text-gray-600">AI Summary</p>
-                <p className="text-[10px] text-gray-400 leading-relaxed italic border-l-2 border-glow-green/30 pl-3">{result.aiSummary}</p>
+                <p className="text-[8px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-400">AI Summary</p>
+                <p className="text-[10px] text-gray-800 dark:text-gray-400 leading-relaxed italic border-l-2 border-glow-green/30 pl-3">{result.aiSummary}</p>
              </div>
           )}
           {result.imageSummary && (
              <div className="space-y-1">
                 <p className="text-[8px] font-black uppercase tracking-widest text-glow-blue/60">Visual Analysis</p>
-                <p className="text-[10px] text-glow-blue/80 leading-relaxed font-medium bg-glow-blue/5 p-3 rounded-xl border border-glow-blue/10">{result.imageSummary}</p>
+                <p className="text-[10px] text-glow-blue leading-relaxed font-medium bg-glow-blue/5 p-3 rounded-xl border border-glow-blue/10">{result.imageSummary}</p>
              </div>
           )}
           {result.aiRemarks && (
@@ -3299,15 +3302,7 @@ const AIRescueAssessment = ({ result, onViewDetails }: { result: any, onViewDeta
                   <AlertTriangle size={10} className="text-orange-500" />
                   <p className="text-[8px] font-black uppercase tracking-widest text-orange-500">Safety Precautions</p>
                 </div>
-                <p className="text-[9px] text-orange-300 italic leading-relaxed">{result.safetyPrecautions}</p>
-             </div>
-          )}
-          
-          {result.detectedObjects && result.detectedObjects.length > 0 && (
-             <div className="flex flex-wrap gap-1.5 pt-2">
-                {result.detectedObjects.map((obj: string, idx: number) => (
-                   <span key={idx} className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-[7px] font-black text-gray-500 uppercase tracking-tighter">#{obj}</span>
-                ))}
+                <p className="text-[9px] text-orange-600 dark:text-orange-300 italic leading-relaxed">{result.safetyPrecautions}</p>
              </div>
           )}
         </div>
@@ -3315,7 +3310,7 @@ const AIRescueAssessment = ({ result, onViewDetails }: { result: any, onViewDeta
       
       <button 
         onClick={() => onViewDetails(result.id)}
-        className="w-full mt-8 py-3 bg-white/5 border border-white/10 rounded-xl text-[9px] font-black text-white uppercase tracking-widest hover:bg-glow-green hover:text-[#060B16] hover:border-glow-green transition-all duration-300 shadow-lg"
+        className="w-full mt-8 py-3 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-[9px] font-black text-slate-900 dark:text-white uppercase tracking-widest hover:bg-glow-green hover:text-white hover:border-glow-green transition-all duration-300 shadow-lg"
       >
         View Detailed Analysis
       </button>
@@ -3325,7 +3320,6 @@ const AIRescueAssessment = ({ result, onViewDetails }: { result: any, onViewDeta
 
 const LiveRescueTracker = ({ complaint, onViewDetails }: { complaint: any, onViewDetails: (id: string) => void }) => {
   const hasComplaint = !!complaint;
-  // Timeline is always computed dynamically from complaint.status - never from stored array
   const timelineSteps = complaint ? generateTimeline(complaint.status || 'Submitted', complaint.submittedAt || '') : [
     { label: 'Report Received', status: 'pending' as const, date: '--', time: '--', description: 'Waiting for report submission.' },
     { label: 'Rescue Team Assigned', status: 'pending' as const, date: '--', time: '--', description: 'Team will be assigned after report.' },
@@ -3335,34 +3329,34 @@ const LiveRescueTracker = ({ complaint, onViewDetails }: { complaint: any, onVie
   ];
 
   return (
-    <div className="glass-card rounded-[2rem] p-6 border border-white/5 flex flex-col min-h-[300px] flex-1">
+    <div className="glass-card rounded-[2rem] p-6 border border-slate-200 dark:border-white/5 flex flex-col min-h-[300px] flex-1 bg-white dark:bg-[#060B16]">
       <div className="flex items-center gap-3 mb-6 shrink-0">
-        <div className="h-10 w-10 rounded-2xl bg-[#060B16] flex items-center justify-center text-glow-blue shadow-[0_0_15px_rgba(59,130,246,0.1)] border border-glow-blue/20">
+        <div className="h-10 w-10 rounded-2xl bg-slate-100 dark:bg-[#060B16] flex items-center justify-center text-glow-blue shadow-[0_0_15px_rgba(59,130,246,0.1)] border border-slate-200 dark:border-glow-blue/20">
           <Activity size={18} />
         </div>
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-glow-blue drop-shadow-[0_0_8px_rgba(59,130,246,0.3)]">Live Tracker</h3>
+        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-glow-blue">Live Tracker</h3>
       </div>
       
       <div className="relative pl-8 space-y-6 overflow-y-auto custom-scrollbar flex-1 pr-2 max-h-[250px]">
-        <div className="absolute left-[15px] top-[10px] bottom-4 w-[2px] bg-slate-800 rounded-full" />
+        <div className="absolute left-[15px] top-[10px] bottom-4 w-[2px] bg-slate-200 dark:bg-slate-800 rounded-full" />
         
         {timelineSteps.map((step: any, i: number) => (
           <div key={i} className="relative">
             <div className={`absolute -left-[24px] top-0.5 h-4 w-4 rounded-full border-2 flex items-center justify-center z-10 transition-all ${
               step.status === 'completed' ? 'bg-glow-green border-glow-green shadow-[0_0_8px_rgba(34,197,94,0.3)]' : 
-              step.status === 'active' ? 'bg-[#060B16] border-glow-blue shadow-[0_0_8px_rgba(59,130,246,0.3)]' : 'bg-[#060B16] border-slate-700'
+              step.status === 'active' ? 'bg-white dark:bg-[#060B16] border-glow-blue shadow-[0_0_8px_rgba(59,130,246,0.3)]' : 'bg-white dark:bg-[#060B16] border-slate-300 dark:border-slate-700'
             }`}>
-              {step.status === 'completed' && <CheckCircle2 size={10} className="text-[#060B16]" />}
+              {step.status === 'completed' && <CheckCircle2 size={10} className="text-white" />}
               {step.status === 'active' && <div className="h-1.5 w-1.5 rounded-full bg-glow-blue animate-pulse" />}
             </div>
             
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 sm:gap-4">
               <div className="min-w-0 flex-1">
-                <h4 className={`text-[9px] font-black leading-none mb-1 uppercase tracking-widest ${step.status === 'pending' ? 'text-gray-500' : 'text-white'}`}>{step.label}</h4>
+                <h4 className={`text-[9px] font-black leading-none mb-1 uppercase tracking-widest ${step.status === 'pending' ? 'text-gray-400' : 'text-slate-900 dark:text-white'}`}>{step.label}</h4>
                 <p className="text-[8px] text-gray-500 font-medium leading-relaxed truncate">{step.description}</p>
               </div>
               <div className="sm:text-right shrink-0">
-                <p className="text-[9px] font-black text-white">{step.date}</p>
+                <p className="text-[9px] font-black text-slate-900 dark:text-white">{step.date}</p>
                 <p className="text-[7px] text-gray-500 font-medium">{step.time}</p>
               </div>
             </div>
@@ -3373,7 +3367,7 @@ const LiveRescueTracker = ({ complaint, onViewDetails }: { complaint: any, onVie
       <button 
         onClick={() => hasComplaint && onViewDetails(complaint.id)}
         disabled={!hasComplaint}
-        className="w-full mt-6 py-3 bg-white/5 border border-white/10 rounded-xl text-[9px] font-black text-gray-500 uppercase tracking-widest hover:text-white hover:bg-white/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
+        className="w-full mt-6 py-3 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-[9px] font-black text-slate-500 uppercase tracking-widest hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
       >
         Track Details
       </button>
@@ -3435,45 +3429,45 @@ const RescueSupportPortal = ({ setView }: { setView: (v: View) => void }) => {
             <button 
               key={i} 
               onClick={() => f.action ? f.action() : setSelectedFeature(f)}
-              className="glass-card rounded-[1.5rem] p-5 border border-white/5 hover:border-glow-green/30 transition-all group text-left flex flex-col h-full hover:bg-white/5"
+              className="glass-card rounded-[1.5rem] p-5 border border-slate-200 dark:border-white/5 hover:border-glow-green/30 transition-all group text-left flex flex-col h-full bg-white dark:bg-[#060B16] hover:bg-slate-50 dark:hover:bg-white/5"
             >
               <div className="flex items-center gap-4 mb-3 shrink-0">
-                <div className={`h-10 w-10 rounded-xl ${f.bg} flex items-center justify-center ${f.color} transition-transform group-hover:rotate-12 shrink-0 border border-white/5 shadow-lg`}>
+                <div className={`h-10 w-10 rounded-xl ${f.bg} flex items-center justify-center ${f.color} transition-transform group-hover:rotate-12 shrink-0 border border-slate-200 dark:border-white/5 shadow-lg`}>
                    <f.icon size={18} />
                 </div>
                 <div className="min-w-0">
                    <div className="flex items-center gap-2">
-                     <p className="text-[11px] font-black text-white truncate">{f.label}</p>
+                     <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">{f.label}</p>
                    </div>
                    <p className="text-[9px] font-bold text-gray-500 mt-0.5">{f.status}</p>
                 </div>
               </div>
-              <p className="text-[10px] font-medium text-gray-400 leading-tight line-clamp-2 mt-auto group-hover:text-gray-300">{f.desc}</p>
+              <p className="text-[10px] font-medium text-gray-400 leading-tight line-clamp-2 mt-auto group-hover:text-gray-500">{f.desc}</p>
             </button>
           ))}
        </div>
 
        <AnimatePresence>
          {selectedFeature && (
-           <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+           <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
              <motion.div 
                initial={{ scale: 0.9, opacity: 0 }}
                animate={{ scale: 1, opacity: 1 }}
                exit={{ scale: 0.9, opacity: 0 }}
-               className="glass-card rounded-[2.5rem] w-full max-w-md p-8 border border-glow-green/20 shadow-[0_0_50px_rgba(0,0,0,0.5)]"
+               className="glass-card rounded-[2.5rem] w-full max-w-md p-8 border border-glow-green/20 shadow-[0_0_50px_rgba(0,0,0,0.5)] bg-white dark:bg-[#060B16]"
              >
                <div className="flex justify-between items-start mb-6">
-                 <div className={`h-14 w-14 rounded-2xl ${selectedFeature.bg} flex items-center justify-center ${selectedFeature.color} shadow-lg border border-white/5`}>
+                 <div className={`h-14 w-14 rounded-2xl ${selectedFeature.bg} flex items-center justify-center ${selectedFeature.color} shadow-lg border border-slate-200 dark:border-white/5`}>
                    <selectedFeature.icon size={28} />
                  </div>
-                 <button onClick={() => setSelectedFeature(null)} className="p-2 hover:bg-white/5 rounded-full transition-colors text-gray-500 hover:text-white"><X size={24} /></button>
+                 <button onClick={() => setSelectedFeature(null)} className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors text-gray-500 hover:text-slate-900 dark:hover:text-white"><X size={24} /></button>
                </div>
-               <h2 className="text-2xl font-black text-white mb-2">{selectedFeature.label}</h2>
+               <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2">{selectedFeature.label}</h2>
                <div className="flex items-center gap-2 mb-6">
                   <div className={`h-2 w-2 rounded-full ${selectedFeature.color} animate-pulse`} />
                   <p className={`text-[10px] font-black uppercase tracking-widest ${selectedFeature.color}`}>{selectedFeature.status}</p>
                </div>
-               <p className="text-gray-400 text-sm leading-relaxed mb-8 whitespace-pre-line">
+               <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-8 whitespace-pre-line">
                  {selectedFeature.label === 'Veterinary Partners' ? (
                     <>
                       Our verified partners:<br />
@@ -3486,7 +3480,7 @@ const RescueSupportPortal = ({ setView }: { setView: (v: View) => void }) => {
                </p>
                <button 
                  onClick={() => setSelectedFeature(null)}
-                 className="w-full py-4 bg-glow-green text-[#060B16] font-black rounded-2xl hover:brightness-110 transition-all shadow-lg shadow-glow-green/20"
+                 className="w-full py-4 bg-glow-green text-white font-black rounded-2xl hover:brightness-110 transition-all shadow-lg shadow-glow-green/20"
                >
                  Close
                </button>
@@ -3524,14 +3518,14 @@ const AnimalTodayImpact = ({ complaints }: { complaints: Complaint[] }) => {
        </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         {stats.map((s, i) => (
-          <div key={i} className="glass-card rounded-[2rem] p-6 border border-white/5 relative overflow-hidden group hover:border-glow-green/20 transition-all">
+          <div key={i} className="glass-card rounded-[2rem] p-6 border border-slate-200 dark:border-white/5 relative overflow-hidden group hover:border-glow-green/20 transition-all bg-white dark:bg-[#060B16]">
             <div className={`absolute top-0 right-0 p-4 opacity-[0.03] ${s.color} group-hover:opacity-10 transition-opacity`}>
               <s.icon size={40} />
             </div>
-            <div className={`h-10 w-10 rounded-xl bg-[#060B16] flex items-center justify-center ${s.color} mb-4 border border-white/5 shadow-inner`}>
+            <div className={`h-10 w-10 rounded-xl bg-slate-100 dark:bg-[#060B16] flex items-center justify-center ${s.color} mb-4 border border-slate-200 dark:border-white/5 shadow-inner`}>
               <s.icon size={18} className="opacity-80" />
             </div>
-            <p className="text-2xl font-black text-white mb-1">{s.value}</p>
+            <p className="text-2xl font-black text-slate-900 dark:text-white mb-1">{s.value}</p>
             <p className="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-2">{s.label}</p>
             <p className={`text-[8px] font-bold ${s.color} opacity-60`}>{s.change}</p>
           </div>
@@ -3551,7 +3545,6 @@ const AnimalWelfarePage = ({ language, complaints, onComplaintSubmit, onViewDeta
     const [locationStatus, setLocationStatus] = useState<'idle' | 'detecting' | 'detected' | 'error'>('idle');
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-    // Auto-detect location on mount for better user experience
     useEffect(() => {
         detectLocation();
     }, []);
@@ -3561,7 +3554,6 @@ const AnimalWelfarePage = ({ language, complaints, onComplaintSubmit, onViewDeta
     (c.department && (c.department.toLowerCase().includes('veterinary') || c.department.toLowerCase().includes('animal')))
   );
     const latestAnimalRescue = animalComplaints[0] || null;
-    const [pincode, setPincode] = useState('');
 
     const detectLocation = () => {
         if (!navigator.geolocation) {
@@ -3593,32 +3585,9 @@ const AnimalWelfarePage = ({ language, complaints, onComplaintSubmit, onViewDeta
         );
     };
 
-    const searchLocation = async () => {
-      if (!address) return;
-      setLocationStatus('detecting');
-      try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`);
-        const data = await response.json();
-        if (data && data.length > 0) {
-          const lat = parseFloat(data[0].lat);
-          const lon = parseFloat(data[0].lon);
-          setPosition([lat, lon]);
-          setLocationStatus('detected');
-          setShowMap(true);
-          setAddress(data[0].display_name);
-        } else {
-          setLocationStatus('error');
-        }
-      } catch (e) {
-        console.error('Search failed:', e);
-        setLocationStatus('error');
-      }
-    };
-
     const handleSubmit = async () => {
         if (!problem && !uploadedFile) return;
         setIsAnalyzing(true);
-        console.log("🐾 [ANIMAL WELFARE DEBUG] Starting submission...");
         
         try {
             const now = new Date();
@@ -3661,9 +3630,8 @@ const AnimalWelfarePage = ({ language, complaints, onComplaintSubmit, onViewDeta
             setProblem('');
             setUploadedFile(null);
             setAddress('');
-            console.log("✅ [ANIMAL WELFARE DEBUG] Submission successful.");
         } catch (error) {
-            console.error("❌ [ANIMAL WELFARE DEBUG] Submission failed:", error);
+            console.error("Submission failed:", error);
         } finally {
             setIsAnalyzing(false);
         }
@@ -3674,13 +3642,12 @@ const AnimalWelfarePage = ({ language, complaints, onComplaintSubmit, onViewDeta
             <RescueHero language={language} complaints={complaints} />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                {/* Main Column */}
                 <div className="lg:col-span-2 space-y-12">
-                   <div className="glass-card rounded-[2.5rem] p-8 border border-glow-green/30 relative overflow-hidden shadow-[0_0_25px_rgba(34,197,94,0.05)]">
+                   <div className="glass-card rounded-[2.5rem] p-8 border border-glow-green/30 relative overflow-hidden shadow-[0_0_25px_rgba(34,197,94,0.05)] bg-white dark:bg-[#060B16]">
                       <div className="absolute -top-24 -left-24 h-48 w-48 bg-glow-green/5 blur-3xl rounded-full" />
                       
                       <div className="flex items-center gap-3 mb-8 relative z-10">
-                        <div className="h-10 w-10 rounded-2xl bg-[#060B16] flex items-center justify-center text-glow-green shadow-[0_0_15px_rgba(34,197,94,0.1)] border border-glow-green/20">
+                        <div className="h-10 w-10 rounded-2xl bg-slate-100 dark:bg-[#060B16] flex items-center justify-center text-glow-green shadow-[0_0_15px_rgba(34,197,94,0.1)] border border-slate-200 dark:border-glow-green/20">
                           <PawPrint size={18} />
                         </div>
                         <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-glow-green drop-shadow-[0_0_8px_rgba(34,197,94,0.3)]">Report an Animal in Need</h3>
@@ -3691,23 +3658,23 @@ const AnimalWelfarePage = ({ language, complaints, onComplaintSubmit, onViewDeta
                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-2">Upload Photo</label>
                            <div 
                               onClick={() => fileInputRef.current?.click()}
-                              className="h-48 w-full rounded-[2rem] bg-white/5 border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-3 text-gray-500 cursor-pointer hover:bg-white/10 hover:border-glow-green/40 transition-all group overflow-hidden relative shadow-inner"
+                              className="h-48 w-full rounded-[2rem] bg-slate-50 dark:bg-white/5 border-2 border-dashed border-slate-200 dark:border-white/10 flex flex-col items-center justify-center gap-3 text-gray-500 cursor-pointer hover:bg-slate-100 dark:hover:bg-white/10 hover:border-glow-green/40 transition-all group overflow-hidden relative shadow-inner"
                            >
                               {uploadedFile ? (
                                 <div className="relative h-full w-full">
                                   <img src={URL.createObjectURL(uploadedFile)} className="h-full w-full object-cover" />
                                   <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                                    <p className="text-[10px] font-black text-white uppercase tracking-widest bg-[#060B16]/80 px-4 py-2 rounded-full">Change Photo</p>
+                                    <p className="text-[10px] font-black text-white uppercase tracking-widest bg-slate-900/80 px-4 py-2 rounded-full">Change Photo</p>
                                   </div>
                                 </div>
                               ) : (
                                 <>
-                                  <div className="h-12 w-12 rounded-full bg-[#060B16] flex items-center justify-center group-hover:scale-110 transition-transform group-hover:text-glow-green group-hover:border-glow-green/40 border border-white/5">
-                                    <Upload size={24} className="text-gray-600 group-hover:text-glow-green transition-colors" />
+                                  <div className="h-12 w-12 rounded-full bg-slate-100 dark:bg-[#060B16] flex items-center justify-center group-hover:scale-110 transition-transform group-hover:text-glow-green group-hover:border-glow-green/40 border border-slate-200 dark:border-white/5">
+                                    <Upload size={24} className="text-slate-400 dark:text-gray-500 transition-colors" />
                                   </div>
                                   <div className="text-center">
-                                    <p className="text-[10px] font-black text-white">Click to upload</p>
-                                    <p className="text-[8px] font-bold">Max size 5MB • JPG, PNG</p>
+                                    <p className="text-[10px] font-black text-slate-900 dark:text-white">Click to upload</p>
+                                    <p className="text-[8px] font-bold text-slate-500 dark:text-gray-500">Max size 5MB • JPG, PNG</p>
                                   </div>
                                 </>
                               )}
@@ -3721,7 +3688,7 @@ const AnimalWelfarePage = ({ language, complaints, onComplaintSubmit, onViewDeta
                               value={problem}
                               onChange={(e) => setProblem(e.target.value)}
                               placeholder="Describe what happened, injuries seen, and exact location markers..."
-                              className="w-full h-48 rounded-[2rem] bg-white/5 border border-white/10 p-6 text-sm text-white outline-none focus:border-glow-green/40 focus:bg-[#060B16] transition-all resize-none placeholder:text-gray-700 shadow-inner"
+                              className="w-full h-48 rounded-[2rem] bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-6 text-sm text-slate-900 dark:text-white outline-none focus:border-glow-green/40 focus:bg-white dark:focus:bg-[#060B16] transition-all resize-none placeholder:text-slate-300 dark:placeholder:text-gray-700 shadow-inner"
                            />
                         </div>
                       </div>
@@ -3730,22 +3697,6 @@ const AnimalWelfarePage = ({ language, complaints, onComplaintSubmit, onViewDeta
                           <div className="flex-1 w-full space-y-3">
                              <div className="flex justify-between items-center px-2">
                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Animal Location / Address</label>
-                               <div className="flex gap-4">
-                                 <button 
-                                   type="button"
-                                   onClick={detectLocation}
-                                   className="text-[9px] font-black text-glow-green uppercase tracking-widest hover:brightness-125 transition-all flex items-center gap-1"
-                                 >
-                                   <Navigation size={10} /> Detect My Location
-                                 </button>
-                                 <button 
-                                   type="button"
-                                   onClick={() => setShowMap(!showMap)}
-                                   className="text-[9px] font-black text-glow-green uppercase tracking-widest hover:brightness-125 transition-all"
-                                 >
-                                   {showMap ? 'Hide Map' : 'Pick from Map'}
-                                 </button>
-                               </div>
                              </div>
                             <div className="relative">
                                <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-glow-green/50" />
@@ -3753,30 +3704,19 @@ const AnimalWelfarePage = ({ language, complaints, onComplaintSubmit, onViewDeta
                                  type="text" 
                                  value={address}
                                  onChange={(e) => setAddress(e.target.value)}
-                                 onKeyDown={(e) => e.key === 'Enter' && searchLocation()}
                                  placeholder="Type address or location landmarks..."
-                                 className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-xs font-black text-white outline-none focus:border-glow-green/40 shadow-inner"
+                                 className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 pl-12 pr-4 text-xs font-black text-slate-900 dark:text-white outline-none focus:border-glow-green/40 shadow-inner"
                                />
                             </div>
-                            {showMap && (
-                              <div className="mt-4 overflow-hidden rounded-3xl border border-white/10 shadow-2xl animate-in zoom-in-95 duration-300">
-                                <LocationPicker 
-                                  position={position} 
-                                  setPosition={setPosition} 
-                                  setAddress={setAddress} 
-                                  theme={theme}
-                                />
-                              </div>
-                            )}
                           </div>
                          <button 
                             onClick={handleSubmit}
                             disabled={isAnalyzing || !problem}
-                            className="h-14 px-12 bg-glow-green text-[#060B16] font-black rounded-2xl shadow-[0_10px_20px_rgba(34,197,94,0.2)] flex items-center justify-center gap-3 hover:scale-105 active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed group"
+                            className="h-14 px-12 bg-glow-green text-white font-black rounded-2xl shadow-[0_10px_20px_rgba(34,197,94,0.2)] flex items-center justify-center gap-3 hover:scale-105 active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed group"
                          >
                             {isAnalyzing ? (
                               <>
-                                <div className="h-5 w-5 border-3 border-[#060B16]/30 border-t-[#060B16] rounded-full animate-spin" />
+                                <div className="h-5 w-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
                                 ANALYZING...
                               </>
                             ) : (
@@ -3788,47 +3728,8 @@ const AnimalWelfarePage = ({ language, complaints, onComplaintSubmit, onViewDeta
 
                    <RescueSupportPortal setView={setView} />
                    <AnimalTodayImpact complaints={complaints} />
-
-                   <div className="space-y-6">
-                      <div className="flex items-center gap-2 px-2">
-                        <MapPin size={14} className="text-glow-green" />
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Live Rescue Hotspots</h3>
-                      </div>
-                      <LiveMap complaints={complaints.filter(c => c.department === 'Animal Welfare')} language={language} theme={theme} center={position || [28.6139, 77.2090]} />
-                   </div>
-
-                   {/* Save a Life Landscape Card */}
-                   <div className="glass-card rounded-[2.5rem] p-8 border border-glow-green/20 relative overflow-hidden flex flex-col md:flex-row items-center gap-10 shadow-lg group">
-                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(34,197,94,0.05),transparent_70%)]" />
-                      <div className="relative z-10 flex-1 space-y-4 text-center md:text-left">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-glow-green/5 border border-glow-green/10 text-glow-green/60 text-[8px] font-black uppercase tracking-widest mb-2">
-                           Motivational Pledge
-                        </div>
-                        <h4 className="text-2xl font-black text-white leading-tight">Your report can save a life.</h4>
-                        <p className="text-sm text-gray-400 font-medium leading-relaxed max-w-md">
-                          "The greatness of a nation and its moral progress can be judged by the way its animals are treated." - Mahatma Gandhi. Join thousands of citizens in building a more humane city.
-                        </p>
-                        <button className="px-6 py-2.5 rounded-xl border border-glow-green/20 text-glow-green text-[10px] font-black uppercase tracking-widest hover:bg-glow-green/10 transition-all">Learn About Our Mission</button>
-                      </div>
-                      
-                      <div className="relative shrink-0">
-                         <div className="h-40 w-40 rounded-full border-2 border-glow-green/30 p-2 shadow-[0_0_30px_rgba(34,197,94,0.1)] group-hover:border-glow-green/50 transition-colors">
-                            <div className="relative h-full w-full rounded-full overflow-hidden bg-[#060B16]">
-                               <img 
-                                 src="/image/image5.jpeg" 
-                                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                                 alt="Rescue Impact"
-                               />
-                            </div>
-                         </div>
-                         <div className="absolute -bottom-2 -right-2 h-10 w-10 rounded-full bg-glow-green flex items-center justify-center text-[#060B16] shadow-lg shadow-glow-green/20">
-                            <Heart size={20} />
-                         </div>
-                      </div>
-                   </div>
                 </div>
 
-                {/* Sidebar Column */}
                 <div className="space-y-8 flex flex-col">
                    <AIRescueAssessment result={latestAnimalRescue} onViewDetails={onViewDetails} />
                    <LiveRescueTracker complaint={latestAnimalRescue} onViewDetails={onViewDetails} />
@@ -3842,10 +3743,8 @@ const SocialHelpHero = ({ complaints, language }: { complaints: Complaint[], lan
   const socialComplaints = complaints.filter(c => c.department === 'Social Help');
   const resolvedCount = socialComplaints.filter(c => c.status === 'Resolved').length;
   const totalReports = socialComplaints.length;
-  
-  // Mock monthly reunion based on resolved count for demo
   const reunitedCount = resolvedCount; 
-  const ngosCount = totalReports > 0 ? 12 : 0; // Simple logic for nearby NGOs
+  const ngosCount = totalReports > 0 ? 12 : 0; 
 
   const stats = [
     { label: 'People Helped', value: resolvedCount, icon: Users, color: 'text-pink-400', sub: 'This Month' },
@@ -3858,7 +3757,7 @@ const SocialHelpHero = ({ complaints, language }: { complaints: Complaint[], lan
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative rounded-[2.5rem] overflow-hidden bg-[#060B16] border border-pink-500/20 shadow-[0_0_50px_rgba(236,72,153,0.1)] min-h-[350px] flex items-center mb-10 group"
+      className="relative rounded-[2.5rem] overflow-hidden bg-white dark:bg-slate-950 border border-pink-500/20 shadow-[0_0_50px_rgba(236,72,153,0.1)] min-h-[350px] flex items-center mb-10 group"
     >
       <div className="absolute inset-0 z-0">
         <img 
@@ -3866,7 +3765,7 @@ const SocialHelpHero = ({ complaints, language }: { complaints: Complaint[], lan
           alt="Social Help Hero" 
           className="h-full w-full object-cover object-center transition-transform duration-1000 group-hover:scale-105" 
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#060B16] via-[#060B16]/80 to-transparent z-10" />
+        <div className="absolute inset-0 bg-slate-900/70 z-10" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(236,72,153,0.15),transparent_70%)] z-10" />
       </div>
       
@@ -3878,20 +3777,16 @@ const SocialHelpHero = ({ complaints, language }: { complaints: Complaint[], lan
           <h1 className="text-5xl font-black text-white leading-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
             Social Help & <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500">Community Support</span>
           </h1>
-          <p className="text-gray-400 text-sm leading-relaxed max-w-md font-medium">
-            Providing support for mentally challenged, orphaned children, missing people, and vulnerable individuals. Every report is a step towards a safer society.
-          </p>
         </div>
         
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 pt-4">
           {stats.map((s, i) => (
             <div key={i} className="space-y-1">
               <div className="flex items-center gap-2">
-                 <s.icon size={16} className={s.color} />
+                 <s.icon size={16} className="text-white" />
                  <span className="text-2xl font-black text-white tracking-tight">{s.value}</span>
               </div>
-              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{s.label}</p>
-              <p className="text-[8px] font-medium text-gray-600">{s.sub}</p>
+              <p className="text-[10px] font-bold text-gray-200 uppercase tracking-widest">{s.label}</p>
             </div>
           ))}
         </div>
@@ -3902,48 +3797,40 @@ const SocialHelpHero = ({ complaints, language }: { complaints: Complaint[], lan
 
 const SocialHelpTracker = ({ complaint, onViewDetails }: { complaint: Complaint | null, onViewDetails: (id: string) => void }) => {
   if (!complaint) return (
-    <div className="glass-card rounded-[2.5rem] p-8 border border-white/5 flex flex-col items-center justify-center text-center space-y-4 min-h-[500px]">
+    <div className="glass-card rounded-[2.5rem] p-8 border border-slate-200 dark:border-white/5 flex flex-col items-center justify-center text-center space-y-4 min-h-[500px] bg-white dark:bg-slate-950">
        <div className="h-16 w-16 rounded-full bg-pink-500/5 flex items-center justify-center text-pink-500/20">
           <Activity size={32} />
        </div>
        <div className="space-y-1">
          <h4 className="text-sm font-bold text-gray-500">No active tracking</h4>
-         <p className="text-xs text-gray-600 max-w-[200px]">Submit a report to see live rescue updates here.</p>
+         <p className="text-xs text-gray-400 max-w-[200px]">Submit a report to see live rescue updates here.</p>
        </div>
     </div>
   );
 
   return (
-    <div className="glass-card rounded-[2.5rem] p-8 border border-pink-500/20 relative overflow-hidden shadow-[0_0_30px_rgba(236,72,153,0.05)] h-full">
+    <div className="glass-card rounded-[2.5rem] p-8 border border-pink-500/20 relative overflow-hidden shadow-[0_0_30px_rgba(236,72,153,0.05)] h-full bg-white dark:bg-slate-950">
       <div className="flex items-center justify-between mb-10">
-        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-pink-400 flex items-center gap-2">
+        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-pink-500 flex items-center gap-2">
           <Activity size={16} className="animate-pulse" /> Live Support Tracker
         </h3>
-        <span className="text-[10px] font-bold text-gray-500 bg-white/5 px-3 py-1 rounded-full">{complaint.id}</span>
+        <span className="text-[10px] font-bold text-gray-500 bg-slate-100 dark:bg-white/5 px-3 py-1 rounded-full">{complaint.id}</span>
       </div>
 
       <div className="relative pl-8 space-y-8">
-        <div className="absolute left-[15px] top-[10px] bottom-4 w-[2px] bg-gradient-to-b from-pink-500/40 via-purple-500/40 to-transparent rounded-full" />
+        <div className="absolute left-[15px] top-[10px] bottom-4 w-[2px] bg-slate-200 dark:bg-slate-800 rounded-full" />
         
-        {complaint.timeline.map((step, i) => (
+        {complaint.timeline?.map((step: any, i: number) => (
           <div key={i} className="relative">
             <div className={`absolute -left-[26px] top-0 h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all z-10 ${
-              step.status === 'completed' ? 'bg-pink-500 border-pink-500 shadow-[0_0_12px_rgba(236,72,153,0.5)]' : 
-              step.status === 'active' ? 'bg-[#060B16] border-purple-500 shadow-[0_0_12px_rgba(168,85,247,0.5)]' : 'bg-[#060B16] border-gray-800'
+              step.status === 'completed' ? 'bg-pink-500 border-pink-500' : 
+              step.status === 'active' ? 'bg-white dark:bg-slate-950 border-purple-500' : 'bg-white dark:bg-slate-950 border-slate-300 dark:border-slate-800'
             }`}>
-              {step.status === 'completed' && <Check size={12} className="text-white" />}
               {step.status === 'active' && <div className="h-2 w-2 rounded-full bg-purple-500 animate-pulse" />}
             </div>
             
             <div className="space-y-1">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1">
-                <h4 className={`text-[11px] font-black uppercase tracking-wider ${step.status === 'pending' ? 'text-gray-600' : 'text-white'}`}>{step.label}</h4>
-                <div className="sm:text-right shrink-0">
-                  <p className="text-[9px] font-bold text-gray-500">{step.date}</p>
-                  <p className="text-[8px] font-medium text-gray-600">{step.time}</p>
-                </div>
-              </div>
-              <p className="text-[10px] text-gray-500 leading-relaxed font-medium">{step.description}</p>
+              <h4 className={`text-[11px] font-black uppercase tracking-wider ${step.status === 'pending' ? 'text-gray-400' : 'text-slate-900 dark:text-white'}`}>{step.label}</h4>
             </div>
           </div>
         ))}
@@ -3951,9 +3838,9 @@ const SocialHelpTracker = ({ complaint, onViewDetails }: { complaint: Complaint 
 
       <button 
         onClick={() => onViewDetails(complaint.id)}
-        className="w-full mt-12 py-4 rounded-2xl bg-white/5 border border-pink-500/20 text-pink-400 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-pink-500/10 transition-all flex items-center justify-center gap-2 group"
+        className="w-full mt-12 py-4 rounded-2xl bg-slate-100 dark:bg-white/5 border border-pink-500/20 text-pink-500 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-pink-500/10 transition-all flex items-center justify-center gap-2"
       >
-        <LayoutDashboard size={14} /> View Full Details <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+        <LayoutDashboard size={14} /> View Details
       </button>
     </div>
   );
@@ -3962,83 +3849,25 @@ const SocialHelpTracker = ({ complaint, onViewDetails }: { complaint: Complaint 
 const SocialHelpImpact = ({ complaints }: { complaints: Complaint[] }) => {
   const socialComplaints = complaints.filter(c => c.department === 'Social Help');
   const resolvedCount = socialComplaints.filter(c => c.status === 'Resolved').length;
-  const inProgressCount = socialComplaints.filter(c => c.status === 'In Progress').length;
   
   const stats = [
-    { label: 'People Helped', value: resolvedCount, icon: Users, color: 'text-pink-400', trend: '+28% from yesterday' },
-    { label: 'Reunited with Family', value: Math.floor(resolvedCount * 0.4), icon: Heart, color: 'text-purple-400', trend: '+40% from yesterday' },
-    { label: 'Reports Received', value: socialComplaints.length, icon: MessageSquare, color: 'text-cyan-400', trend: '+10% from yesterday' },
-    { label: 'NGOs Notified', value: socialComplaints.length > 0 ? 9 : 0, icon: Building2, color: 'text-orange-400', trend: 'Active in your area' },
+    { label: 'People Helped', value: resolvedCount, icon: Users, color: 'text-pink-400' },
+    { label: 'Reports Received', value: socialComplaints.length, icon: MessageSquare, color: 'text-cyan-400' },
   ];
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2 mb-2">
-         <Activity size={14} className="text-pink-500/60" />
-         <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Today's Impact</h3>
-       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 gap-6">
         {stats.map((s, i) => (
-          <div key={i} className="glass-card rounded-[2rem] p-6 border border-white/5 relative overflow-hidden group hover:border-pink-500/20 transition-all">
-            <div className={`absolute top-0 right-0 p-4 opacity-[0.03] ${s.color} group-hover:opacity-10 transition-opacity`}>
-              <s.icon size={40} />
+          <div key={i} className="glass-card rounded-[2rem] p-6 border border-slate-200 dark:border-white/5 relative bg-white dark:bg-[#060B16]">
+            <div className={`h-10 w-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center ${s.color} mb-4 border border-slate-200 dark:border-white/5 shadow-inner`}>
+              <s.icon size={18} />
             </div>
-            <div className={`h-10 w-10 rounded-xl bg-[#060B16] flex items-center justify-center ${s.color} mb-4 border border-white/5 shadow-inner`}>
-              <s.icon size={18} className="opacity-80" />
-            </div>
-            <p className="text-2xl font-black text-white mb-1">{s.value}</p>
-            <p className="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-2">{s.label}</p>
-            <p className={`text-[8px] font-bold ${s.color} opacity-60`}>{s.trend}</p>
+            <p className="text-2xl font-black text-slate-900 dark:text-white mb-1">{s.value}</p>
+            <p className="text-[9px] font-black uppercase tracking-widest text-gray-500">{s.label}</p>
           </div>
         ))}
       </div>
-    </div>
-  );
-};
-
-const SocialHelpAIAssessment = ({ result, onViewDetails }: { result: Complaint | null, onViewDetails: (id: string) => void }) => {
-  return (
-    <div className="glass-card rounded-[2.5rem] p-8 border border-purple-500/30 relative overflow-hidden shadow-[0_0_30px_rgba(168,85,247,0.05)]">
-       <div className="absolute top-0 right-0 p-6 opacity-10 text-purple-500">
-         <Sparkles size={40} />
-       </div>
-       
-       <div className="flex items-center gap-3 mb-8 relative z-10">
-          <div className="h-10 w-10 rounded-2xl bg-[#060B16] flex items-center justify-center text-purple-400 border border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.1)]">
-             <Bot size={20} />
-          </div>
-          <div>
-            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-purple-300">AI Case Assessment</h3>
-            <p className="text-[8px] font-bold text-gray-500 uppercase tracking-tighter">Real-time analysis active</p>
-          </div>
-       </div>
-
-       <div className="space-y-6 relative z-10">
-          {[
-            { label: 'Detected Category', value: result?.aiData?.category || 'N/A', icon: Search, color: 'text-pink-400' },
-            { label: 'Priority Level', value: result?.priority || 'N/A', icon: AlertTriangle, color: 'text-rose-500' },
-            { label: 'Situation Analysis', value: result?.aiData?.situation || 'Analyzing...', icon: Activity, color: 'text-orange-400' },
-            { label: 'Nearest Support NGO', value: result?.aiData?.ngo || 'Searching...', icon: Building2, color: 'text-emerald-400' },
-            { label: 'Estimated Response', value: result?.aiData?.eta || 'N/A', icon: Clock, color: 'text-cyan-400' },
-          ].map((item, i) => (
-            <div key={i} className="flex items-center justify-between group/item">
-               <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-lg bg-white/5 flex items-center justify-center text-gray-600 group-hover/item:text-purple-400 transition-colors">
-                     <item.icon size={14} />
-                  </div>
-                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{item.label}</p>
-               </div>
-               <p className={`text-[10px] font-black ${item.color} tracking-tight`}>{item.value}</p>
-            </div>
-          ))}
-       </div>
-
-       <button 
-          onClick={() => result && onViewDetails(result.id)}
-          className="w-full mt-10 py-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-300 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-purple-500/20 transition-all flex items-center justify-center gap-2 group"
-       >
-          <ExternalLink size={14} /> View Full Assessment <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
-       </button>
     </div>
   );
 };
@@ -4053,14 +3882,8 @@ const SocialHelpPage = ({ language, complaints, onComplaintSubmit, onViewDetails
     const [locationStatus, setLocationStatus] = useState<'idle' | 'detecting' | 'detected' | 'error'>('idle');
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-    // Auto-detect location on mount for better user experience
-    useEffect(() => {
-        detectLocation();
-    }, []);
-
     const socialComplaints = complaints.filter(c => c.department === 'Social Help');
     const latestCase = socialComplaints[0] || null;
-    const [pincode, setPincode] = useState('');
 
     const detectLocation = () => {
         if (!navigator.geolocation) {
@@ -4117,7 +3940,6 @@ const SocialHelpPage = ({ language, complaints, onComplaintSubmit, onViewDetails
     const handleSubmit = async () => {
         if (!problem && !uploadedFile) return;
         setIsAnalyzing(true);
-        console.log("🤝 [SOCIAL HELP DEBUG] Starting submission...");
         
         try {
             const now = new Date();
@@ -4151,7 +3973,7 @@ const SocialHelpPage = ({ language, complaints, onComplaintSubmit, onViewDetails
                 department: 'Social Help',
                 priority: 'High',
                 status: 'Submitted',
-                estimatedTime: 'Calculating...',
+                estimatedTime: '3 - 5 Working Days',
                 submittedAt: `${dateStr} • ${timeStr}`
             };
 
@@ -4160,9 +3982,8 @@ const SocialHelpPage = ({ language, complaints, onComplaintSubmit, onViewDetails
             setProblem('');
             setUploadedFile(null);
             setAddress('');
-            console.log("✅ [SOCIAL HELP DEBUG] Submission successful.");
         } catch (error) {
-            console.error("❌ [SOCIAL HELP DEBUG] Submission failed:", error);
+            console.error("Submission failed:", error);
         } finally {
             setIsAnalyzing(false);
         }
@@ -4173,16 +3994,15 @@ const SocialHelpPage = ({ language, complaints, onComplaintSubmit, onViewDetails
             <SocialHelpHero complaints={complaints} language={language} />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                {/* Main Column */}
                 <div className="lg:col-span-2 space-y-12">
-                   <div className="glass-card rounded-[2.5rem] p-8 border border-pink-500/30 relative overflow-hidden shadow-[0_0_25px_rgba(236,72,153,0.05)]">
+                   <div className="glass-card rounded-[2.5rem] p-8 border border-pink-500/30 relative overflow-hidden shadow-[0_0_25px_rgba(236,72,153,0.05)] bg-white dark:bg-slate-950">
                       <div className="absolute -top-24 -left-24 h-48 w-48 bg-pink-500/5 blur-3xl rounded-full" />
                       
                       <div className="flex items-center gap-3 mb-8 relative z-10">
-                        <div className="h-10 w-10 rounded-2xl bg-[#060B16] flex items-center justify-center text-pink-500 shadow-[0_0_15px_rgba(236,72,153,0.1)] border border-pink-500/20">
+                        <div className="h-10 w-10 rounded-2xl bg-slate-100 dark:bg-[#060B16] flex items-center justify-center text-pink-500 shadow-[0_0_15px_rgba(236,72,153,0.1)] border border-slate-200 dark:border-pink-500/20">
                           <Heart size={18} />
                         </div>
-                        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-pink-400 drop-shadow-[0_0_8px_rgba(236,72,153,0.3)]">Report a Social Help Case</h3>
+                        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-pink-600 dark:text-pink-400">Report a Social Help Case</h3>
                       </div>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
@@ -4190,23 +4010,23 @@ const SocialHelpPage = ({ language, complaints, onComplaintSubmit, onViewDetails
                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-2">Upload Photo / Video</label>
                            <div 
                               onClick={() => fileInputRef.current?.click()}
-                              className="h-48 w-full rounded-[2rem] bg-white/5 border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-3 text-gray-500 cursor-pointer hover:bg-white/10 hover:border-pink-500/40 transition-all group overflow-hidden relative shadow-inner"
+                              className="h-48 w-full rounded-[2rem] bg-slate-50 dark:bg-white/5 border-2 border-dashed border-slate-200 dark:border-white/10 flex flex-col items-center justify-center gap-3 text-gray-500 cursor-pointer hover:bg-slate-100 dark:hover:bg-white/10 hover:border-pink-500/40 transition-all group overflow-hidden relative shadow-inner"
                            >
                               {uploadedFile ? (
                                 <div className="relative h-full w-full">
                                   <img src={URL.createObjectURL(uploadedFile)} className="h-full w-full object-cover" />
                                   <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                                    <p className="text-[10px] font-black text-white uppercase tracking-widest bg-[#060B16]/80 px-4 py-2 rounded-full">Change Media</p>
+                                    <p className="text-[10px] font-black text-white uppercase tracking-widest bg-slate-900/80 px-4 py-2 rounded-full">Change Media</p>
                                   </div>
                                 </div>
                               ) : (
                                 <>
-                                  <div className="h-12 w-12 rounded-full bg-[#060B16] flex items-center justify-center group-hover:scale-110 transition-transform group-hover:text-pink-500 group-hover:border-pink-500/40 border border-white/5">
-                                    <Upload size={24} className="text-gray-600 group-hover:text-pink-500 transition-colors" />
+                                  <div className="h-12 w-12 rounded-full bg-slate-100 dark:bg-[#060B16] flex items-center justify-center group-hover:scale-110 transition-transform group-hover:text-pink-500 group-hover:border-pink-500/40 border border-slate-200 dark:border-white/5">
+                                    <Upload size={24} className="text-slate-400 dark:text-gray-600 group-hover:text-pink-500 transition-colors" />
                                   </div>
                                   <div className="text-center">
-                                    <p className="text-[10px] font-black text-white">Click to upload</p>
-                                    <p className="text-[8px] font-bold">JPG, PNG, MP4 up to 50MB</p>
+                                    <p className="text-[10px] font-black text-slate-900 dark:text-white">Click to upload</p>
+                                    <p className="text-[8px] font-bold text-slate-500 dark:text-gray-500">JPG, PNG, MP4 up to 50MB</p>
                                   </div>
                                 </>
                               )}
@@ -4220,7 +4040,7 @@ const SocialHelpPage = ({ language, complaints, onComplaintSubmit, onViewDetails
                               value={problem}
                               onChange={(e) => setProblem(e.target.value)}
                               placeholder="Provide details about the person, location, behaviour, and any other relevant information..."
-                              className="w-full h-48 rounded-[2rem] bg-white/5 border border-white/10 p-6 text-sm text-white outline-none focus:border-pink-500/40 focus:bg-[#060B16] transition-all resize-none placeholder:text-gray-700 shadow-inner"
+                              className="w-full h-48 rounded-[2rem] bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-6 text-sm text-slate-900 dark:text-white outline-none focus:border-pink-500/40 focus:bg-white dark:focus:bg-[#060B16] transition-all resize-none placeholder:text-slate-300 dark:placeholder:text-gray-700 shadow-inner"
                            />
                         </div>
                       </div>
@@ -4233,14 +4053,14 @@ const SocialHelpPage = ({ language, complaints, onComplaintSubmit, onViewDetails
                                 <button 
                                   type="button"
                                   onClick={detectLocation}
-                                  className="text-[9px] font-black text-pink-400 uppercase tracking-widest hover:brightness-125 transition-all flex items-center gap-1"
+                                  className="text-[9px] font-black text-pink-600 dark:text-pink-400 uppercase tracking-widest hover:brightness-125 transition-all flex items-center gap-1"
                                 >
                                   <Navigation size={10} /> Detect My Location
                                 </button>
                                 <button 
                                   type="button"
                                   onClick={() => setShowMap(!showMap)}
-                                  className="text-[9px] font-black text-pink-400 uppercase tracking-widest hover:brightness-125 transition-all"
+                                  className="text-[9px] font-black text-pink-600 dark:text-pink-400 uppercase tracking-widest hover:brightness-125 transition-all"
                                  >
                                   {showMap ? 'Hide Map' : 'Pick From Map'}
                                 </button>
@@ -4254,11 +4074,11 @@ const SocialHelpPage = ({ language, complaints, onComplaintSubmit, onViewDetails
                                 onChange={(e) => setAddress(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && searchLocation()}
                                 placeholder="Enter full address or nearby landmark..."
-                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-xs font-black text-white outline-none focus:border-pink-500/40 shadow-inner"
+                                className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-4 pl-12 pr-4 text-xs font-black text-slate-900 dark:text-white outline-none focus:border-pink-500/40 shadow-inner"
                               />
                            </div>
                            {showMap && (
-                             <div className="mt-4 overflow-hidden rounded-3xl border border-white/10 shadow-2xl animate-in zoom-in-95 duration-300">
+                             <div className="mt-4 overflow-hidden rounded-3xl border border-slate-200 dark:border-white/10 shadow-2xl animate-in zoom-in-95 duration-300">
                                <LocationPicker 
                                  position={position} 
                                  setPosition={setPosition} 
@@ -4296,25 +4116,25 @@ const SocialHelpPage = ({ language, complaints, onComplaintSubmit, onViewDetails
                    </div>
 
                    {/* Save a Life CTA */}
-                   <div className="glass-card rounded-[2.5rem] p-10 border border-pink-500/20 relative overflow-hidden flex flex-col md:flex-row items-center gap-12 shadow-lg group bg-gradient-to-br from-[#060B16] to-[#0d0f1a]">
+                   <div className="glass-card rounded-[2.5rem] p-10 border border-pink-500/20 relative overflow-hidden flex flex-col md:flex-row items-center gap-12 shadow-lg group bg-white dark:bg-slate-900">
                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(236,72,153,0.05),transparent_70%)]" />
                       <div className="relative z-10 flex-1 space-y-5 text-center md:text-left">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-500/5 border border-pink-500/10 text-pink-400/60 text-[8px] font-black uppercase tracking-widest">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-500/5 border border-pink-500/10 text-pink-600 dark:text-pink-400/60 text-[8px] font-black uppercase tracking-widest">
                            Join the movement
                         </div>
-                        <h4 className="text-3xl font-black text-white leading-tight">A little help can change a life.</h4>
-                        <p className="text-sm text-gray-400 font-medium leading-relaxed max-w-md">
+                        <h4 className="text-3xl font-black text-slate-900 dark:text-white leading-tight">A little help can change a life.</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 font-medium leading-relaxed max-w-md">
                           Your report can bring hope to someone in need. Join our community of volunteers and NGOs making a difference every single day.
                         </p>
                         <div className="flex flex-wrap gap-4 pt-2">
                            <button className="px-8 py-3 bg-pink-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-pink-500/20 hover:bg-pink-600 transition-all flex items-center gap-2">Report Now <ChevronRight size={14}/></button>
-                           <button className="px-8 py-3 rounded-xl border border-white/10 text-white text-[10px] font-black uppercase tracking-widest hover:bg-white/5 transition-all">Support NGOs</button>
+                           <button className="px-8 py-3 rounded-xl border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-white/5 transition-all">Support NGOs</button>
                         </div>
                       </div>
                       
                       <div className="relative shrink-0">
                          <div className="h-48 w-48 rounded-full border-4 border-pink-500/20 p-3 shadow-[0_0_50px_rgba(236,72,153,0.2)] group-hover:border-pink-500/40 transition-colors relative">
-                            <div className="h-full w-full rounded-full overflow-hidden bg-[#060B16] relative">
+                            <div className="h-full w-full rounded-full overflow-hidden bg-slate-100 dark:bg-[#060B16] relative">
                                <img 
                                  src="social_help_banner_bg_1778251459405.png" 
                                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" 
@@ -4330,7 +4150,6 @@ const SocialHelpPage = ({ language, complaints, onComplaintSubmit, onViewDetails
                    </div>
                 </div>
 
-                {/* Sidebar Column */}
                 <div className="space-y-8 flex flex-col h-full">
                    <SocialHelpAIAssessment result={latestCase} onViewDetails={onViewDetails} />
                    <SocialHelpTracker complaint={latestCase} onViewDetails={onViewDetails} />
@@ -5958,15 +5777,17 @@ export default function App() {
 
   const hasCheckedAuth = useRef(false);
   useEffect(() => {
-    // Only fetch data if we have a user
+    // Initial data fetch for public content
+    const fetchPublicData = async () => {
+      await fetchSchemes();
+      await fetchDonations();
+      await fetchInitiatives();
+    };
+    fetchPublicData();
+
+    // Only fetch protected data if we have a user
     if (user) {
-      const initialize = async () => {
-        await fetchComplaints();
-        await fetchSchemes();
-        await fetchDonations();
-        await fetchInitiatives();
-      };
-      initialize();
+      fetchComplaints();
 
       // Realtime Polling for accurate data
       const pollInterval = setInterval(() => {
